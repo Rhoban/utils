@@ -17,6 +17,8 @@ public:
 
 Json::Value file2Json(const std::string& path);
 
+void writeJson(const Json::Value & v, const std::string & path, bool human=true);
+
 class JsonSerializable
 {
 public:

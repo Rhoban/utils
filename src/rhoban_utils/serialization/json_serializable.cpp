@@ -41,6 +41,16 @@ Json::Value file2Json(const std::string& path)
   return json_content;
 }
 
+void writeJson(const Json::Value & v, const std::string & path, bool human)
+{
+  std::string content = json2String(v, human);
+  std::ofstream output(path);
+  if (!output.good()) {
+    throw std::runtime_error(DEBUG_INFO + "failed to open file at '" + path + "'");
+  }
+  output << content;
+}
+
 JsonSerializable::JsonSerializable()
 {
 }
