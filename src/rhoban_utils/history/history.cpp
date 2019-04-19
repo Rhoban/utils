@@ -4,309 +4,241 @@
 
 namespace rhoban_utils
 {
-History::History(double window) : _mutex(), _isLogging(false), _startLoggingTime(-1.0), _windowSize(window), _values()
+HistoryDouble::HistoryDouble(double window) : History(window)
 {
 }
 
-void History::setWindowSize(double window)
+double HistoryDouble::doInterpolate(double valLow, double wLow, double valUp, double wUp) const
 {
-  _windowSize = window;
+  return wLow * valLow + wUp * valUp;
 }
 
-size_t History::size() const
+double HistoryDouble::fallback() const
 {
-  return _values.size();
+  return 0.0;
 }
 
-const std::pair<double, double>& History::front() const
+HistoryDouble::TimedValue HistoryDouble::readValueFromStream(std::istream& is)
 {
-  if (_values.size() == 0)
-  {
-    static std::pair<double, double> zero = { 0.0, 0.0 };
-    return zero;
-  }
-  else
-  {
-    return _values.front();
-  }
-}
-const std::pair<double, double>& History::back() const
-{
-  if (_values.size() == 0)
-  {
-    static std::pair<double, double> zero = { 0.0, 0.0 };
-    return zero;
-  }
-  else
-  {
-    return _values.back();
-  }
+  TimedValue value;
+
+  is.read((char*)&value.first, sizeof(double));
+  is.read((char*)&value.second, sizeof(double));
+
+  return value;
 }
 
-void History::pushValue(double timestamp, double value)
+void HistoryDouble::writeValueToStream(const TimedValue& value, std::ostream& os)
 {
-  // Lock
-  _mutex.lock();
-  // Check that timestamp is increasing
-  if (_values.size() > 0 && timestamp < _values.back().first)
-  {
-    _mutex.unlock();
-    throw std::logic_error("History invalid timestamp");
-  }
-  if (_values.size() > 0 && timestamp == _values.back().first)
-  {
-    _mutex.unlock();
-    return;
-  }
-  std::pair<double, double> entry(timestamp, value);
-  // Insert the value
-  _values.push_back(entry);
-  // Shrink the queue if not in logging mode
-  while (!_isLogging && !_values.empty() && (_values.back().first - _values.front().first > _windowSize))
-  {
-    _values.pop_front();
-  }
-  // Set the startLoggingTime to the first
-  // data timestampt pushed after startLogging() is called
-  if (_isLogging && _startLoggingTime < 0.0)
-  {
-    _startLoggingTime = timestamp;
-  }
-  // Write new entries for all named sessions
-  for (auto& namedLog : _activeLogs)
-  {
-    namedLog.second->push_back(entry);
-  }
-  // Unlock
-  _mutex.unlock();
+  os.write((const char*)&(value.first), sizeof(double));
+  os.write((const char*)&(value.second), sizeof(double));
 }
 
-double History::interpolate(double timestamp, History::ValueType valueType) const
+HistoryAngle::HistoryAngle(double window) : HistoryDouble(window)
 {
-  // Lock
-  _mutex.lock();
+}
 
-  // Degererate failback cases
-  if (_values.size() == 0)
-  {
-    _mutex.unlock();
-    return 0.0;
-  }
-  else if (_values.size() == 1)
-  {
-    _mutex.unlock();
-    return _values.front().second;
-  }
-  else if (timestamp <= _values.front().first)
-  {
-    _mutex.unlock();
-    return _values.front().second;
-  }
-  else if (timestamp >= _values.back().first)
-  {
-    _mutex.unlock();
-    return _values.back().second;
-  }
+double HistoryAngle::doInterpolate(double valLow, double wLow, double valUp, double wUp) const
+{
+  Angle angleLow(rad2deg(valLow));
+  Angle angleUp(rad2deg(valUp));
+  auto result = Angle::weightedAverage(angleLow, wLow, angleUp, wUp);
 
-  // Bijection search
-  size_t indexLow = 0;
-  size_t indexUp = _values.size() - 1;
-  while (indexUp - indexLow > 1)
+  return deg2rad(result.getSignedValue());
+}
+
+HistoryPose::HistoryPose(double window) : History(window)
+{
+}
+
+HistoryPose::TimedValue HistoryPose::readValueFromStream(std::istream& is)
+{
+  HistoryPose::TimedValue value;
+
+  double values[7];
+
+  is.read((char*)&value.first, sizeof(double));
+  is.read((char*)&values, sizeof(values));
+
+  value.second.fromPositionOrientationScale(
+    Eigen::Vector3d(values[0], values[1], values[2]),
+    Eigen::Quaterniond(values[3], values[4], values[5], values[6]),
+    Eigen::Vector3d(1, 1, 1)
+  );
+
+  return value;
+}
+
+void HistoryPose::writeValueToStream(const HistoryPose::TimedValue& value, std::ostream& os)
+{
+  auto translation = value.second.translation();
+  Eigen::Quaterniond q(value.second.rotation());
+
+  double values[7] = {
+    translation.x(), translation.y(), translation.z(),
+    q.w(), q.x(), q.y(), q.z()
+  };
+  
+  os.write((const char*)&(value.first), sizeof(double));
+  os.write((const char*)&(values), sizeof(values));
+}
+
+Eigen::Affine3d HistoryPose::doInterpolate(Eigen::Affine3d valLow, double wLow, Eigen::Affine3d valHigh,
+                                           double wHigh) const
+{
+  // Slerp for orientation
+  Eigen::Quaterniond qLow(valLow.rotation());
+  Eigen::Quaterniond qHigh(valHigh.rotation());
+  Eigen::Quaterniond q = qLow.slerp(wHigh, qHigh);
+
+  // Weighted average for translation
+  Eigen::Vector3d tLow(valLow.translation().x(), valLow.translation().y(), valLow.translation().z());
+  Eigen::Vector3d tHigh(valHigh.translation().x(), valHigh.translation().y(), valHigh.translation().z());
+  Eigen::Vector3d t = wLow * tLow + wHigh * tHigh;
+
+  Eigen::Affine3d result;
+  result.fromPositionOrientationScale(t, q, Eigen::Vector3d(1, 1, 1));
+
+  return result;
+}
+
+Eigen::Affine3d HistoryPose::fallback() const
+{
+  return Eigen::Affine3d::Identity();
+}
+
+HistoryCollection::HistoryCollection() : mutex()
+{
+}
+
+HistoryCollection::~HistoryCollection()
+{
+  for (auto& entry : _histories)
   {
-    size_t indexMiddle = (indexLow + indexUp) / 2;
-    if (_values[indexMiddle].first <= timestamp)
-    {
-      indexLow = indexMiddle;
-    }
-    else
-    {
-      indexUp = indexMiddle;
-    }
-  }
-
-  // Retrieve lower and upper bound values
-  double tsLow = _values[indexLow].first;
-  double valLow = _values[indexLow].second;
-  double tsUp = _values[indexUp].first;
-  double valUp = _values[indexUp].second;
-
-  // Unlock
-  _mutex.unlock();
-
-  // Weights
-  double wLow = (tsUp - timestamp) / (tsUp - tsLow);
-  double wUp = (timestamp - tsLow) / (tsUp - tsLow);
-
-  if (valueType == Number)
-  {
-    // Return linear interpolated value
-    return wLow * valLow + wUp * valUp;
-  }
-  else if (valueType == AngleRad)
-  {
-    Angle angleLow(rad2deg(valLow));
-    Angle angleUp(rad2deg(valUp));
-    auto result = Angle::weightedAverage(angleLow, wLow, angleUp, wUp);
-
-    return deg2rad(result.getSignedValue());
-  }
-  else
-  {
-    throw std::logic_error("History unknown value type for interpolate");
+    delete entry.second;
   }
 }
 
-void History::startLogging()
+void HistoryCollection::loadReplays(const std::string& filePath)
 {
-  _mutex.lock();
-  _isLogging = true;
-  _startLoggingTime = -1.0;
-  _mutex.unlock();
-}
+  clear();
 
-void History::stopLogging(std::ostream& os, bool binary)
-{
-  _mutex.lock();
-  _isLogging = false;
-  if (!binary)
-  {
-    for (const auto& it : _values)
-    {
-      // Skip data in buffer before logging start
-      if (_startLoggingTime > 0.0 && it.first >= _startLoggingTime)
-      {
-        // Write ascii data
-        os << std::setprecision(15) << it.first << " " << std::setprecision(15) << it.second << std::endl;
-      }
-    }
-  }
-  else
-  {
-    writeBinary(_values, os);
-  }
-  _mutex.unlock();
-}
+  mutex.lock();
 
-void History::loadReplay(std::istream& is, bool binary, double timeShift)
-{
-  _mutex.lock();
-  // Clean the container
-  _values.clear();
-  // Read the number of data
-  size_t size = 0;
-  if (binary)
+  std::ifstream file(filePath.c_str());
+  // Check file
+  if (!file.is_open())
   {
-    is.read((char*)&size, sizeof(size_t));
+    mutex.unlock();
+    throw std::runtime_error("HistoryCollection unable to read file: '" + filePath + "'");
   }
-  // Read the input stream
+
+  // Binary format
   while (true)
   {
-    // Extract one data point
-    double timestamp;
-    double value;
-    if (binary)
+    if (!file.good() || file.peek() == EOF)
     {
-      if (size == 0)
-      {
-        _mutex.unlock();
-        return;
-      }
-      is.read((char*)&timestamp, sizeof(double));
-      is.read((char*)&value, sizeof(double));
-      size--;
+      break;
     }
-    else
+    size_t length = 0;
+    char buffer[256];
+    file.read((char*)&length, sizeof(size_t));
+    file.read(buffer, length);
+    buffer[length] = '\0';
+    std::string name(buffer);
+
+    // Retrieve all data for current key
+    if (!_histories.count(name))
     {
-      while (is.peek() == ' ' || is.peek() == '\n')
-      {
-        is.ignore();
-      }
-      if (is.peek() == '#' || is.peek() == EOF)
-      {
-        _mutex.unlock();
-        return;
-      }
-      is >> timestamp >> value;
+      std::ostringstream os;
+      os << "Unable to load history, unknown name \"" << name << "\"";
+      throw std::runtime_error(os.str());
     }
-    // Apply time shift
-    timestamp += timeShift;
-    // Check that timestamp is increasing
-    if (_values.size() > 0 && timestamp <= _values.back().first)
+
+    _histories[name]->loadReplay(file, 0.0);
+    std::cout << "Loading " << name << " with " << _histories[name]->size() << " points" << std::endl;
+  }
+
+  // Close read file
+  file.close();
+  mutex.unlock();
+}
+
+double HistoryCollection::smallerTimestamp()
+{
+  bool has = false;
+  double smallerTimestamp = -1;
+
+  for (auto &entry : _histories) {
+    if (entry.second->size() > 0 && (!has || entry.second->frontTimestamp() < smallerTimestamp)) {
+      has = true;
+      smallerTimestamp = entry.second->frontTimestamp();
+    }
+  }
+
+  return smallerTimestamp;
+}
+
+void HistoryCollection::startNamedLog(const std::string& filePath)
+{
+  mutex.lock();
+  for (auto& it : _histories)
+  {
+    it.second->startNamedLog(filePath);
+  }
+  mutex.unlock();
+}
+
+void HistoryCollection::stopNamedLog(const std::string& filePath)
+{
+  mutex.lock();
+
+  /// First, freeze all histories for the session name
+  for (auto& it : _histories)
+  {
+    try
     {
-      _mutex.unlock();
-      throw std::runtime_error("History invalid timestamp");
+      it.second->freezeNamedLog(filePath);
     }
-    // Insert the value
-    _values.push_back(std::pair<double, double>(timestamp, value));
+    catch (std::logic_error error)
+    {
+      mutex.unlock();
+      throw error;
+    }
   }
-}
-
-std::deque<History::TimedValue> History::getValues()
-{
-  return _values;
-}
-
-void History::clear()
-{
-  _values.clear();
-}
-
-void History::startNamedLog(const std::string& sessionName)
-{
-  _mutex.lock();
-  if (_activeLogs.count(sessionName) > 0)
+  // Open log file
+  std::ofstream file(filePath.c_str());
+  // Check file
+  if (!file.is_open())
   {
-    _mutex.unlock();
-    throw std::logic_error(DEBUG_INFO + " there is already a session with name '" + sessionName + "'");
+    mutex.unlock();
+    throw std::runtime_error(DEBUG_INFO + "unable to write to file '" + filePath + "'");
   }
-  _activeLogs[sessionName] = std::unique_ptr<std::deque<TimedValue>>(new std::deque<TimedValue>());
-  _mutex.unlock();
+  /// Second write logs
+  for (auto& it : _histories)
+  {
+    size_t length = it.first.length();
+    file.write((const char*)(&length), sizeof(size_t));
+    file.write((const char*)(it.first.c_str()), length);
+    it.second->closeFrozenLog(filePath, file);
+  }
+
+  mutex.unlock();
 }
 
-void History::freezeNamedLog(const std::string& sessionName)
+void HistoryCollection::clear()
 {
-  _mutex.lock();
-  if (_activeLogs.count(sessionName) == 0)
+  mutex.lock();
+  for (auto& entry : _histories)
   {
-    _mutex.unlock();
-    throw std::logic_error(DEBUG_INFO + " there is no active session with name '" + sessionName + "'");
+    entry.second->clear();
   }
-  if (_frozenLogs.count(sessionName) > 0)
-  {
-    _mutex.unlock();
-    throw std::logic_error(DEBUG_INFO + " there is already a frozen session with name '" + sessionName + "'");
-  }
-  _frozenLogs[sessionName] = std::move(_activeLogs[sessionName]);
-  _activeLogs.erase(sessionName);
-  _mutex.unlock();
+  mutex.unlock();
 }
 
-void History::closeFrozenLog(const std::string& sessionName, std::ostream& os)
+std::map<std::string, HistoryBase*> &HistoryCollection::entries()
 {
-  _mutex.lock();
-  if (_frozenLogs.count(sessionName) == 0)
-  {
-    _mutex.unlock();
-    throw std::logic_error(DEBUG_INFO + " there is no open session with name '" + sessionName + "'");
-  }
-  std::unique_ptr<std::deque<TimedValue>> values = std::move(_frozenLogs[sessionName]);
-  _frozenLogs.erase(sessionName);
-  _mutex.unlock();
-
-  writeBinary(*values, os);
-}
-
-void History::writeBinary(const std::deque<History::TimedValue>& values, std::ostream& os)
-{
-  // When writing in binary, use all values
-  size_t size = values.size();
-  os.write((const char*)&size, sizeof(size_t));
-  for (const auto& it : values)
-  {
-    // Write binary data
-    os.write((const char*)&(it.first), sizeof(double));
-    os.write((const char*)&(it.second), sizeof(double));
-  }
+  return _histories;
 }
 
 }  // namespace rhoban_utils
