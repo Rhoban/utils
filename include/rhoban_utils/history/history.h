@@ -491,9 +491,10 @@ public:
   void loadReplays(const std::string& filePath);
 
   /**
-   * Find the sameller timestamp
+   * Find the smallest and the biggest timestamp
    */
   double smallerTimestamp();
+  double biggestTimestamp();
 
   void clear();
 

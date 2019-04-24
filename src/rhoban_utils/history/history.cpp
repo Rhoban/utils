@@ -179,6 +179,20 @@ double HistoryCollection::smallerTimestamp()
   return smallerTimestamp;
 }
 
+  double HistoryCollection::biggestTimestamp()
+  {
+    bool has = false;
+    double biggestTimestamp = -1;
+
+    for (auto &entry : _histories) {
+      if (entry.second->size() > 0 && (!has || entry.second->backTimestamp() > biggestTimestamp)) {
+        has = true;
+        biggestTimestamp = entry.second->backTimestamp();
+      }
+    }
+
+    return biggestTimestamp;
+  }
 void HistoryCollection::startNamedLog(const std::string& filePath)
 {
   mutex.lock();
