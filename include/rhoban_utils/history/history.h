@@ -12,6 +12,7 @@
 #include <fstream>
 #include <Eigen/Geometry>
 #include "rhoban_utils/util.h"
+#include "rhoban_utils/logging/csv.h"
 
 namespace rhoban_utils
 {
@@ -480,6 +481,13 @@ public:
   }
 
   /**
+   * Export the history collection to a csv.
+   * The values are taken at: min, min+dt, min+2*dt, ..., max
+   * where min and max are rexpectively the front and back timestamps.
+   */
+  CSV* exportToCSV(double dt);
+
+  /**
    * Start and stop (save) a named log session
    */
   void startNamedLog(const std::string& filePath);
@@ -491,9 +499,10 @@ public:
   void loadReplays(const std::string& filePath);
 
   /**
-   * Find the sameller timestamp
+   * Find the smallest and the biggest timestamp
    */
   double smallerTimestamp();
+  double biggestTimestamp();
 
   void clear();
 

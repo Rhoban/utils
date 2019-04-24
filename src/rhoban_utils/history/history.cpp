@@ -179,6 +179,22 @@ double HistoryCollection::smallerTimestamp()
   return smallerTimestamp;
 }
 
+double HistoryCollection::biggestTimestamp()
+{
+  bool has = false;
+  double biggestTimestamp = -1;
+
+  for (auto &entry : _histories) {
+    if (entry.second->size() > 0 && (!has || entry.second->backTimestamp() > biggestTimestamp)) {
+      has = true;
+      biggestTimestamp = entry.second->backTimestamp();
+    }
+  }
+
+  return biggestTimestamp;
+}
+
+
 void HistoryCollection::startNamedLog(const std::string& filePath)
 {
   mutex.lock();
@@ -239,6 +255,24 @@ void HistoryCollection::clear()
 std::map<std::string, HistoryBase*> &HistoryCollection::entries()
 {
   return _histories;
+}
+
+
+CSV* HistoryCollection::exportToCSV(double dt)
+{
+  CSV* csv = new rhoban_utils::CSV();
+
+  double tmp_t = HistoryCollection::smallerTimestamp();
+  double max_t = HistoryCollection::biggestTimestamp();
+  do{
+    csv->push("time", tmp_t);
+    for(auto& el : entries())
+      csv->push(el.first, dynamic_cast<History *>(el.second)->interpolate(tmp_t));
+    csv->newLine();
+    tmp_t += dt;
+  } while(tmp_t < max_t);
+
+  return csv;
 }
 
 }  // namespace rhoban_utils
