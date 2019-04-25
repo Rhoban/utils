@@ -159,39 +159,35 @@ void HistoryCollection::loadReplays(const std::string& filePath)
   mutex.unlock();
 }
 
-double HistoryCollection::smallerTimestamp()
+double HistoryCollection::smallestTimestamp()
 {
   bool has = false;
-  double smallerTimestamp = -1;
+  double smallestTimestamp = -1;
 
-  for (auto& entry : _histories)
-  {
-    if (entry.second->size() > 0 && (!has || entry.second->frontTimestamp() < smallerTimestamp))
-    {
+  for (auto &entry : _histories) {
+    if (entry.second->size() > 0 && (!has || entry.second->frontTimestamp() < smallestTimestamp)) {
       has = true;
-      smallerTimestamp = entry.second->frontTimestamp();
+      smallestTimestamp = entry.second->frontTimestamp();
     }
   }
 
-  return smallerTimestamp;
+  return smallestTimestamp;
 }
 
-double HistoryCollection::biggestTimestamp()
-{
-  bool has = false;
-  double biggestTimestamp = -1;
-
-  for (auto& entry : _histories)
+  double HistoryCollection::biggestTimestamp()
   {
-    if (entry.second->size() > 0 && (!has || entry.second->backTimestamp() > biggestTimestamp))
-    {
-      has = true;
-      biggestTimestamp = entry.second->backTimestamp();
-    }
-  }
+    bool has = false;
+    double biggestTimestamp = -1;
 
-  return biggestTimestamp;
-}
+    for (auto &entry : _histories) {
+      if (entry.second->size() > 0 && (!has || entry.second->backTimestamp() > biggestTimestamp)) {
+        has = true;
+        biggestTimestamp = entry.second->backTimestamp();
+      }
+    }
+
+    return biggestTimestamp;
+  }
 
 void HistoryCollection::startNamedLog(const std::string& filePath)
 {

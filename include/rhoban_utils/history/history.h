@@ -502,7 +502,7 @@ public:
   /**
    * Find the smallest and the biggest timestamp
    */
-  double smallerTimestamp();
+  double smallestTimestamp();
   double biggestTimestamp();
 
   void clear();
