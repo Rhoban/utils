@@ -34,6 +34,12 @@ void HistoryDouble::writeValueToStream(const TimedValue& value, std::ostream& os
   os.write((const char*)&(value.second), sizeof(double));
 }
 
+std::map<std::string, double> HistoryDouble::requestValue(double time_stamp) const
+{
+  std::map<std::string, double> res{ { "value", HistoryDouble::interpolate(time_stamp) } };
+  return res;
+}
+
 HistoryAngle::HistoryAngle(double window) : HistoryDouble(window)
 {
 }
@@ -102,6 +108,22 @@ Eigen::Affine3d HistoryPose::fallback() const
   return Eigen::Affine3d::Identity();
 }
 
+std::map<std::string, double> HistoryPose::requestValue(double time_stamp) const
+{
+  std::map<std::string, double> res;
+  Eigen::Affine3d pose = HistoryPose::interpolate(time_stamp);
+  res["tx"] = pose.translation().x();
+  res["ty"] = pose.translation().y();
+  res["tz"] = pose.translation().z();
+
+  Eigen::Quaterniond quat(pose.rotation());
+  res["qx"] = quat.x();
+  res["qy"] = quat.y();
+  res["qz"] = quat.z();
+  res["qw"] = quat.w();
+  return res;
+}
+
 HistoryCollection::HistoryCollection() : mutex()
 {
 }
@@ -159,13 +181,15 @@ void HistoryCollection::loadReplays(const std::string& filePath)
   mutex.unlock();
 }
 
-double HistoryCollection::smallestTimestamp()
+double HistoryCollection::smallestTimestamp() const
 {
   bool has = false;
   double smallestTimestamp = -1;
 
-  for (auto &entry : _histories) {
-    if (entry.second->size() > 0 && (!has || entry.second->frontTimestamp() < smallestTimestamp)) {
+  for (auto& entry : _histories)
+  {
+    if (entry.second->size() > 0 && (!has || entry.second->frontTimestamp() < smallestTimestamp))
+    {
       has = true;
       smallestTimestamp = entry.second->frontTimestamp();
     }
@@ -174,20 +198,22 @@ double HistoryCollection::smallestTimestamp()
   return smallestTimestamp;
 }
 
-  double HistoryCollection::biggestTimestamp()
+double HistoryCollection::biggestTimestamp() const
+{
+  bool has = false;
+  double biggestTimestamp = -1;
+
+  for (auto& entry : _histories)
   {
-    bool has = false;
-    double biggestTimestamp = -1;
-
-    for (auto &entry : _histories) {
-      if (entry.second->size() > 0 && (!has || entry.second->backTimestamp() > biggestTimestamp)) {
-        has = true;
-        biggestTimestamp = entry.second->backTimestamp();
-      }
+    if (entry.second->size() > 0 && (!has || entry.second->backTimestamp() > biggestTimestamp))
+    {
+      has = true;
+      biggestTimestamp = entry.second->backTimestamp();
     }
-
-    return biggestTimestamp;
   }
+
+  return biggestTimestamp;
+}
 
 void HistoryCollection::startNamedLog(const std::string& filePath)
 {
@@ -251,22 +277,41 @@ std::map<std::string, HistoryBase*>& HistoryCollection::entries()
   return _histories;
 }
 
-CSV* HistoryCollection::exportToCSV(double dt)
+std::map<std::string, double> HistoryCollection::requestValues(double time_stamp) const
+{
+  std::map<std::string, double> res;
+  std::map<std::string, double> tmp;
+  for (auto& entry : _histories)
+  {
+    tmp = entry.second->requestValue(time_stamp);
+    for (auto& el : tmp)
+    {
+      res[entry.first + ":" + el.first] = el.second;
+    }
+  }
+  return res;
+}
+
+void HistoryCollection::exportToCSV(double dt, std::string filename) const
 {
   CSV* csv = new rhoban_utils::CSV();
+  csv->open(filename);
 
-  double tmp_t = HistoryCollection::smallerTimestamp();
+  std::map<std::string, double> values;
+
+  double tmp_t = HistoryCollection::smallestTimestamp();
   double max_t = HistoryCollection::biggestTimestamp();
   do
   {
     csv->push("time", tmp_t);
-    for (auto& entry : _histories)
-      csv->push(entry.first, dynamic_cast<History*>(entry.second)->interpolate(tmp_t));
+    values = HistoryCollection::requestValues(tmp_t);
+    for (auto& val : values)
+      csv->push(val.first, val.second);
     csv->newLine();
     tmp_t += dt;
   } while (tmp_t < max_t);
 
-  return csv;
+  csv->close();
 }
 
 }  // namespace rhoban_utils

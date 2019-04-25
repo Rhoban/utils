@@ -25,10 +25,10 @@ public:
   virtual void freezeNamedLog(const std::string& sessionName) = 0;
   virtual void closeFrozenLog(const std::string& sessionName, std::ostream& os) = 0;
   virtual void loadReplay(std::istream& is, double timeShift = 0.0) = 0;
-  virtual double frontTimestamp() = 0;
-  virtual double backTimestamp() = 0;
+  virtual double frontTimestamp() const = 0;
+  virtual double backTimestamp() const = 0;
   virtual void clear() = 0;
-  virtual std::map<std::string,double> resquestValues(double time_stamp) = 0;
+  virtual std::map<std::string,double> requestValue(double time_stamp) const = 0;
 };
 
 /**
@@ -90,7 +90,7 @@ public:
     }
   }
 
-  virtual double frontTimestamp()
+  virtual double frontTimestamp() const
   {
     if (_values.size() == 0)
     {
@@ -117,7 +117,7 @@ public:
     }
   }
 
-  virtual double backTimestamp()
+  virtual double backTimestamp() const
   {
     if (_values.size() == 0)
     {
@@ -418,6 +418,8 @@ public:
 
   TimedValue readValueFromStream(std::istream& is);
   void writeValueToStream(const TimedValue& value, std::ostream& os);
+
+  std::map<std::string,double> requestValue(double time_stamp) const;
 };
 
 class HistoryAngle : public HistoryDouble
@@ -438,6 +440,8 @@ public:
 
   TimedValue readValueFromStream(std::istream& is);
   void writeValueToStream(const TimedValue& value, std::ostream& os);
+
+  std::map<std::string,double> requestValue(double time_stamp) const;
 };
 
 class HistoryCollection : public std::map<std::string, HistoryBase*>
@@ -482,11 +486,11 @@ public:
   }
 
   /**
-   * Export the history collection to a csv.
+   * Export the history collection to the csv file `filename`.
    * The values are taken at: min, min+dt, min+2*dt, ..., max
    * where min and max are rexpectively the front and back timestamps.
    */
-  CSV* exportToCSV(double dt);
+  void exportToCSV(double dt, std::string filename) const;
 
   /**
    * Start and stop (save) a named log session
@@ -502,13 +506,14 @@ public:
   /**
    * Find the smallest and the biggest timestamp
    */
-  double smallestTimestamp();
-  double biggestTimestamp();
+  double smallestTimestamp() const;
+  double biggestTimestamp() const;
 
   void clear();
 
   std::map<std::string, HistoryBase*> &entries();
 
+  std::map<std::string,double> requestValues(double time_stamp) const;
 protected:
   std::mutex mutex;
   std::map<std::string, HistoryBase*> _histories;
