@@ -317,7 +317,7 @@ TEST(history, collection_smaller_ts)
 
   collection.number("c");
 
-  EXPECT_FLOAT_EQ(collection.smallerTimestamp(), 1.27);
+  EXPECT_FLOAT_EQ(collection.smallestTimestamp(), 1.27);
 
 }
 

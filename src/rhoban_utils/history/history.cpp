@@ -164,19 +164,19 @@ void HistoryCollection::loadReplays(const std::string& filePath)
   mutex.unlock();
 }
 
-double HistoryCollection::smallerTimestamp()
+double HistoryCollection::smallestTimestamp()
 {
   bool has = false;
-  double smallerTimestamp = -1;
+  double smallestTimestamp = -1;
 
   for (auto &entry : _histories) {
-    if (entry.second->size() > 0 && (!has || entry.second->frontTimestamp() < smallerTimestamp)) {
+    if (entry.second->size() > 0 && (!has || entry.second->frontTimestamp() < smallestTimestamp)) {
       has = true;
-      smallerTimestamp = entry.second->frontTimestamp();
+      smallestTimestamp = entry.second->frontTimestamp();
     }
   }
 
-  return smallerTimestamp;
+  return smallestTimestamp;
 }
 
   double HistoryCollection::biggestTimestamp()
