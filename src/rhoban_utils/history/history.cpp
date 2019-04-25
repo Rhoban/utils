@@ -60,11 +60,9 @@ HistoryPose::TimedValue HistoryPose::readValueFromStream(std::istream& is)
   is.read((char*)&value.first, sizeof(double));
   is.read((char*)&values, sizeof(values));
 
-  value.second.fromPositionOrientationScale(
-    Eigen::Vector3d(values[0], values[1], values[2]),
-    Eigen::Quaterniond(values[3], values[4], values[5], values[6]),
-    Eigen::Vector3d(1, 1, 1)
-  );
+  value.second.fromPositionOrientationScale(Eigen::Vector3d(values[0], values[1], values[2]),
+                                            Eigen::Quaterniond(values[3], values[4], values[5], values[6]),
+                                            Eigen::Vector3d(1, 1, 1));
 
   return value;
 }
@@ -74,11 +72,8 @@ void HistoryPose::writeValueToStream(const HistoryPose::TimedValue& value, std::
   auto translation = value.second.translation();
   Eigen::Quaterniond q(value.second.rotation());
 
-  double values[7] = {
-    translation.x(), translation.y(), translation.z(),
-    q.w(), q.x(), q.y(), q.z()
-  };
-  
+  double values[7] = { translation.x(), translation.y(), translation.z(), q.w(), q.x(), q.y(), q.z() };
+
   os.write((const char*)&(value.first), sizeof(double));
   os.write((const char*)&(values), sizeof(values));
 }
@@ -169,8 +164,10 @@ double HistoryCollection::smallerTimestamp()
   bool has = false;
   double smallerTimestamp = -1;
 
-  for (auto &entry : _histories) {
-    if (entry.second->size() > 0 && (!has || entry.second->frontTimestamp() < smallerTimestamp)) {
+  for (auto& entry : _histories)
+  {
+    if (entry.second->size() > 0 && (!has || entry.second->frontTimestamp() < smallerTimestamp))
+    {
       has = true;
       smallerTimestamp = entry.second->frontTimestamp();
     }
@@ -184,8 +181,10 @@ double HistoryCollection::biggestTimestamp()
   bool has = false;
   double biggestTimestamp = -1;
 
-  for (auto &entry : _histories) {
-    if (entry.second->size() > 0 && (!has || entry.second->backTimestamp() > biggestTimestamp)) {
+  for (auto& entry : _histories)
+  {
+    if (entry.second->size() > 0 && (!has || entry.second->backTimestamp() > biggestTimestamp))
+    {
       has = true;
       biggestTimestamp = entry.second->backTimestamp();
     }
@@ -193,7 +192,6 @@ double HistoryCollection::biggestTimestamp()
 
   return biggestTimestamp;
 }
-
 
 void HistoryCollection::startNamedLog(const std::string& filePath)
 {
@@ -252,11 +250,10 @@ void HistoryCollection::clear()
   mutex.unlock();
 }
 
-std::map<std::string, HistoryBase*> &HistoryCollection::entries()
+std::map<std::string, HistoryBase*>& HistoryCollection::entries()
 {
   return _histories;
 }
-
 
 CSV* HistoryCollection::exportToCSV(double dt)
 {
@@ -264,13 +261,14 @@ CSV* HistoryCollection::exportToCSV(double dt)
 
   double tmp_t = HistoryCollection::smallerTimestamp();
   double max_t = HistoryCollection::biggestTimestamp();
-  do{
+  do
+  {
     csv->push("time", tmp_t);
-    for(auto& el : entries())
-      csv->push(el.first, dynamic_cast<History *>(el.second)->interpolate(tmp_t));
+    for (auto& entry : _histories)
+      csv->push(entry.first, dynamic_cast<History*>(entry.second)->interpolate(tmp_t));
     csv->newLine();
     tmp_t += dt;
-  } while(tmp_t < max_t);
+  } while (tmp_t < max_t);
 
   return csv;
 }

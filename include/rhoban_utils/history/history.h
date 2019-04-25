@@ -28,6 +28,7 @@ public:
   virtual double frontTimestamp() = 0;
   virtual double backTimestamp() = 0;
   virtual void clear() = 0;
+  virtual std::map<std::string,double> resquestValues(double time_stamp) = 0;
 };
 
 /**
