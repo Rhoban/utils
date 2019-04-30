@@ -280,10 +280,9 @@ std::map<std::string, HistoryBase*>& HistoryCollection::entries()
 std::map<std::string, double> HistoryCollection::requestValues(double time_stamp) const
 {
   std::map<std::string, double> res;
-  std::map<std::string, double> tmp;
   for (auto& entry : _histories)
   {
-    tmp = entry.second->requestValue(time_stamp);
+    std::map<std::string, double> tmp = entry.second->requestValue(time_stamp);
     for (auto& el : tmp)
     {
       res[entry.first + ":" + el.first] = el.second;
@@ -292,10 +291,11 @@ std::map<std::string, double> HistoryCollection::requestValues(double time_stamp
   return res;
 }
 
-void HistoryCollection::exportToCSV(double dt, std::string filename) const
+// dt [s]
+void HistoryCollection::exportToCSV(double dt, std::string filename, char separator) const
 {
   CSV* csv = new rhoban_utils::CSV();
-  csv->open(filename);
+  csv->open(filename, separator);
 
   std::map<std::string, double> values;
 

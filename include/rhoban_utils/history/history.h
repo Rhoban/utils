@@ -490,8 +490,9 @@ public:
    * Export the history collection to the csv file `filename`.
    * The values are taken at: min, min+dt, min+2*dt, ..., max
    * where min and max are rexpectively the front and back timestamps.
+   * dt is in s.
    */
-  void exportToCSV(double dt, std::string filename) const;
+  void exportToCSV(double dt, std::string filename, char separator = ',') const;
 
   /**
    * Start and stop (save) a named log session
