@@ -18,9 +18,11 @@ public:
   double getTimeMS() const;
 };
 
-/// Uses system_clock to extract a formatted time: format is:
-/// - YYYY_MM_DD_HHhMMmSSs Ex: 2016_03_25_35h23m12s
-/// Funtion is reentrant
+/**
+ * Uses system_clock to extract a formatted time: format is:
+ * - YYYY_MM_DD_HHhMMmSSs Ex: 2016_03_25_35h23m12s
+ * Function is reentrant
+ */
 std::string getFormattedTime();
 
 /**
