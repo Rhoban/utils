@@ -4,13 +4,15 @@ namespace rhoban_utils
 {
 CSV::CSV()
 {
+  separator = ',';
 }
 
-void CSV::open(std::string filename)
+void CSV::open(std::string filename, char _separator)
 {
   ofs.open(filename.c_str());
   ofs.precision(10);
   header = false;
+  separator = _separator;
 }
 
 void CSV::push(std::string column, double value)
@@ -38,7 +40,9 @@ void CSV::newLine()
 
   for (unsigned int index = 0; index < columns.size(); index++)
   {
-    ofs << values[index] << " ";
+    ofs << values[index];
+    if(index != columns.size()-1)
+      ofs << separator;
   }
   ofs << std::endl;
   ofs.flush();
@@ -55,7 +59,7 @@ void CSV::produceHeader()
     ofs << columnIndexes[index];
     if (index != columnIndexes.size() - 1)
     {
-      ofs << " ";
+      ofs << separator;
     }
     else
     {
