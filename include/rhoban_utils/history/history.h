@@ -19,6 +19,7 @@ namespace rhoban_utils
 class HistoryBase
 {
 public:
+  virtual ~HistoryBase(){}
   virtual void setWindowSize(double window) = 0;
   virtual size_t size() const = 0;
   virtual void startNamedLog(const std::string& sessionName) = 0;
