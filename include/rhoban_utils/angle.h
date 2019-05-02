@@ -18,13 +18,22 @@ protected:
 
 public:
   Angle() : value(0.0){};
-  Angle(double a);  // a must be given in degrees
+
+  enum Type
+  {
+    DEG,
+    RAD
+  };
+
+  Angle(double a, Type type = DEG);
   Angle(const Angle& other) : value(other.value){};
 
   /* Value in [0, 360] */
   double getValue() const;
   /* Value in [-180,180] */
   double getSignedValue() const;
+  /// Value in [-pi,pi]
+  double getSignedValueRad() const;
 
   static Angle fromXY(double x, double y);
   static Angle mean(const std::vector<Angle>& angles);

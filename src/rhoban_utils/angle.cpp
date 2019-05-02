@@ -9,9 +9,14 @@ using namespace std;
 
 namespace rhoban_utils
 {
-Angle::Angle(double a)
+Angle::Angle(double a, Type type)
 {
-  value = fmod(a, 360.0);
+  double _a = a;
+  if (type == RAD)
+  {
+    _a = rad2deg(_a);
+  }
+  value = fmod(_a, 360.0);
   if (value < 0)
   {
     value += 360.0;
@@ -30,6 +35,11 @@ double Angle::getSignedValue() const
     return value - 360;
   }
   return value;
+}
+
+double Angle::getSignedValueRad() const
+{
+  return deg2rad(getSignedValue());
 }
 
 Angle Angle::fromXY(double x, double y)
