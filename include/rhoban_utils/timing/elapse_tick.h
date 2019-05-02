@@ -28,6 +28,7 @@ public:
    * Run one tick
    */
   void tick();
+  void tickElapsed(double elapsed);
 
   /**
    * Timing stats

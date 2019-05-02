@@ -16,6 +16,11 @@ void ElapseTick::tick()
   double elapsed = diffSec(lastTimestamp, nowT);
   lastTimestamp = nowT;
 
+  tickElapsed(elapsed);
+}
+
+void ElapseTick::tickElapsed(double elapsed)
+{
   // Call tick implementation
   TimeStamp start = TimeStamp::now();
   bool isTicked = tick(elapsed);
