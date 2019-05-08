@@ -445,7 +445,7 @@ public:
   std::map<std::string,double> requestValue(double time_stamp) const;
 };
 
-class HistoryCollection : public std::map<std::string, HistoryBase*>
+class HistoryCollection
 {
 public:
   HistoryCollection();
