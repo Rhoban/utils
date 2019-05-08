@@ -14,6 +14,17 @@ StringTable::StringTable()
 StringTable::StringTable(const std::vector<std::string>& column_names_, const std::map<std::string, Column>& data_)
   : column_names(column_names_), data(data_)
 {
+  if (column_names.size() != data.size())
+  {
+    throw std::logic_error(DEBUG_INFO + " size mismatch");
+  }
+  for (const std::string& col_name : column_names)
+  {
+    if (data.count(col_name) == 0)
+    {
+      throw std::logic_error(DEBUG_INFO + " data does not contain column '" + col_name + "'");
+    }
+  }
 }
 
 StringTable StringTable::buildFromFile(const std::string& file_path, char separator, bool has_header)
