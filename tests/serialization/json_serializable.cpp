@@ -310,6 +310,7 @@ TEST(getJsonVal, TestVectorXdSuccess)
   EXPECT_EQ(expected(1), result(1));
 }
 
+// Test with an element empty in the Json::Value
 TEST(getJsonVal, TestVectorXdExceptionObject)
 {
   Json::Value v;
@@ -323,7 +324,6 @@ TEST(getJsonVal, TestVectorXdExceptionObject)
   }
   catch (JsonParsingError& err)
   {
-    EXPECT_EQ(err.what(), std::string("getJsonVal<Eigen::VectorXd>: Expecting an object"));
   }
 }
 
