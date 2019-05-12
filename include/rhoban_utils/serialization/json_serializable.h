@@ -139,12 +139,19 @@ std::vector<T> readVector(const Json::Value& v, const std::string& key)
   {
     throw JsonParsingError("readVector(): Value at '" + key + "' is not an array");
   }
-  std::vector<T> result;
-  for (Json::ArrayIndex idx = 0; idx < v[key].size(); idx++)
+  try
   {
-    result.push_back(getJsonVal<T>(v[key][idx]));
+    std::vector<T> result;
+    for (Json::ArrayIndex idx = 0; idx < v[key].size(); idx++)
+    {
+      result.push_back(getJsonVal<T>(v[key][idx]));
+    }
+    return result;
   }
-  return result;
+  catch (const JsonParsingError& error)
+  {
+    throw JsonParsingError(error.what() + std::string(" when reading vector at '") + key + "'");
+  }
 }
 
 template <typename T>
@@ -155,12 +162,19 @@ std::set<T> readSet(const Json::Value& v, const std::string& key)
   {
     throw JsonParsingError("readVector(): Value at '" + key + "' is not an array");
   }
-  std::set<T> result;
-  for (Json::ArrayIndex idx = 0; idx < v[key].size(); idx++)
+  try
   {
-    result.insert(getJsonVal<T>(v[key][idx]));
+    std::set<T> result;
+    for (Json::ArrayIndex idx = 0; idx < v[key].size(); idx++)
+    {
+      result.insert(getJsonVal<T>(v[key][idx]));
+    }
+    return result;
   }
-  return result;
+  catch (const JsonParsingError& error)
+  {
+    throw JsonParsingError(error.what() + std::string(" when reading set at '") + key + "'");
+  }
 }
 
 template <typename T>
