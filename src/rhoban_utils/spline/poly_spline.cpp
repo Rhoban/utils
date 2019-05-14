@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -30,7 +31,14 @@ double PolySpline::interpolation(double x, PolySpline::ValueType type) const
   }
   else if (_points.size() == 1)
   {
-    return _points.front().value;
+    if (type == Value)
+    {
+      return _points.front().value;
+    }
+    else
+    {
+      return _points.front().delta;
+    }
   }
   else
   {
