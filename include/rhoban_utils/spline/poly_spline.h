@@ -43,8 +43,10 @@ public:
    */
   double getVel(double x) const;
 
-  enum ValueType {
-    Value, Speed
+  enum ValueType
+  {
+    Value,
+    Speed
   };
   double interpolation(double x, ValueType type) const;
 
