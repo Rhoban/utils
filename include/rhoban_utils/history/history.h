@@ -16,6 +16,10 @@
 
 namespace rhoban_utils
 {
+// Average two given frames
+// weight should be between 0 (frameA) and 1 (frameB)
+Eigen::Affine3d averageFrames(Eigen::Affine3d frameA, Eigen::Affine3d frameB, double AtoB);
+
 class HistoryBase
 {
 public:
