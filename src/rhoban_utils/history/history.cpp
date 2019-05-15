@@ -124,7 +124,7 @@ std::map<std::string, double> HistoryPose::requestValue(double time_stamp) const
   return res;
 }
 
-HistoryCollection::HistoryCollection() : mutex()
+HistoryCollection::HistoryCollection(double window) : mutex(), window(window)
 {
 }
 
