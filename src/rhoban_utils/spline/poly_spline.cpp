@@ -9,6 +9,10 @@ namespace rhoban_utils
 void PolySpline::addPoint(double pos, double val, double delta)
 {
   struct Point point = { pos, val, delta };
+  if (_points.size() > 0 && pos <= _points.back().position)
+  {
+    throw std::runtime_error("Trying to add a point in a cublic spline before a previous one");
+  }
   _points.push_back(point);
   computeSplines();
 }
