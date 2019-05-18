@@ -38,6 +38,19 @@ public:
   double get(double x) const;
 
   /**
+   * Returns the spline speed interpolation
+   * for given x position
+   */
+  double getVel(double x) const;
+
+  enum ValueType
+  {
+    Value,
+    Speed
+  };
+  double interpolation(double x, ValueType type) const;
+
+  /**
    * Return the spline interpolation value
    * with x bound between 0 and 1
    */
@@ -81,6 +94,11 @@ private:
    * given polynom value
    */
   static double polynomValue(double t, const Polynom& p);
+
+  /**
+   * Polynom diff. value
+   */
+  static double polynomDiff(double t, const Polynom& p);
 
   /**
    * Fit a polynom between 0 and 1 with

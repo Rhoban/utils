@@ -16,6 +16,10 @@
 
 namespace rhoban_utils
 {
+// Average two given frames
+// weight should be between 0 (frameA) and 1 (frameB)
+Eigen::Affine3d averageFrames(Eigen::Affine3d frameA, Eigen::Affine3d frameB, double AtoB);
+
 class HistoryBase
 {
 public:
@@ -448,7 +452,7 @@ public:
 class HistoryCollection
 {
 public:
-  HistoryCollection();
+  HistoryCollection(double window = 2.0);
   virtual ~HistoryCollection();
 
   template <typename T>
@@ -456,7 +460,7 @@ public:
   {
     if (!_histories.count(name))
     {
-      T* h = new T();
+      T* h = new T(window);
       _histories[name] = h;
     }
 
@@ -517,6 +521,7 @@ public:
 
   std::map<std::string,double> requestValues(double time_stamp) const;
 protected:
+  double window;
   std::mutex mutex;
   std::map<std::string, HistoryBase*> _histories;
 };
