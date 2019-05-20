@@ -23,7 +23,9 @@ Eigen::Affine3d averageFrames(Eigen::Affine3d frameA, Eigen::Affine3d frameB, do
 class HistoryBase
 {
 public:
-  virtual ~HistoryBase(){}
+  virtual ~HistoryBase()
+  {
+  }
   virtual void setWindowSize(double window) = 0;
   virtual size_t size() const = 0;
   virtual void startNamedLog(const std::string& sessionName) = 0;
@@ -33,7 +35,7 @@ public:
   virtual double frontTimestamp() const = 0;
   virtual double backTimestamp() const = 0;
   virtual void clear() = 0;
-  virtual std::map<std::string,double> requestValue(double time_stamp) const = 0;
+  virtual std::map<std::string, double> requestValue(double time_stamp) const = 0;
 };
 
 /**
@@ -164,7 +166,8 @@ public:
     // Insert the value
     _values.push_back(entry);
     // Shrink the queue if not in logging mode
-    if (_windowSize > 0.0) {
+    if (_windowSize > 0.0)
+    {
       while (!_values.empty() && (_values.back().first - _values.front().first > _windowSize))
       {
         _values.pop_front();
@@ -424,7 +427,7 @@ public:
   TimedValue readValueFromStream(std::istream& is);
   void writeValueToStream(const TimedValue& value, std::ostream& os);
 
-  std::map<std::string,double> requestValue(double time_stamp) const;
+  std::map<std::string, double> requestValue(double time_stamp) const;
 };
 
 class HistoryAngle : public HistoryDouble
@@ -443,10 +446,15 @@ public:
   Eigen::Affine3d doInterpolate(Eigen::Affine3d valLow, double wLow, Eigen::Affine3d valHigh, double wHigh) const;
   Eigen::Affine3d fallback() const;
 
+  /**
+   * Return the transformation from pose at t1 to pose at t2
+   */
+  Eigen::Affine3d getDiff(double t1, double t2) const;
+
   TimedValue readValueFromStream(std::istream& is);
   void writeValueToStream(const TimedValue& value, std::ostream& os);
 
-  std::map<std::string,double> requestValue(double time_stamp) const;
+  std::map<std::string, double> requestValue(double time_stamp) const;
 };
 
 class HistoryCollection
@@ -517,9 +525,10 @@ public:
 
   void clear();
 
-  std::map<std::string, HistoryBase*> &entries();
+  std::map<std::string, HistoryBase*>& entries();
 
-  std::map<std::string,double> requestValues(double time_stamp) const;
+  std::map<std::string, double> requestValues(double time_stamp) const;
+
 protected:
   double window;
   std::mutex mutex;

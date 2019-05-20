@@ -113,6 +113,14 @@ Eigen::Affine3d HistoryPose::fallback() const
   return Eigen::Affine3d::Identity();
 }
 
+Eigen::Affine3d HistoryPose::getDiff(double t1, double t2) const
+{
+  // We use x as an arbitrary common basis
+  Eigen::Affine3d x_from_t1 = interpolate(t1).inverse();
+  Eigen::Affine3d t2_from_x = interpolate(t2);
+  return t2_from_x * x_from_t1;
+}
+
 std::map<std::string, double> HistoryPose::requestValue(double time_stamp) const
 {
   std::map<std::string, double> res;
