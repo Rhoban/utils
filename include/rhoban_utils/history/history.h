@@ -460,6 +460,11 @@ public:
   Eigen::Affine3d doInterpolate(Eigen::Affine3d valLow, double wLow, Eigen::Affine3d valHigh, double wHigh) const;
   Eigen::Affine3d fallback() const;
 
+  /**
+   * Return the transformation from pose at t1 to pose at t2
+   */
+  Eigen::Affine3d getDiff(double t1, double t2) const;
+
   TimedValue readValueFromStream(std::istream& is);
   void writeValueToStream(const TimedValue& value, std::ostream& os);
 

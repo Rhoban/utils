@@ -6,12 +6,15 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+#define EPSILON std::pow(10, -6)
+
 /*******************************************************
  * Constructor test
  */
 
 TEST(constructor, testSuccess)
 {
+  // Default
   rhoban_utils::Angle a1(-410.0);
   rhoban_utils::Angle a2(-50.0);
   rhoban_utils::Angle a3(0.0);
@@ -23,6 +26,34 @@ TEST(constructor, testSuccess)
   EXPECT_EQ(0.0, a3.getValue());
   EXPECT_EQ(50.0, a4.getValue());
   EXPECT_EQ(50.0, a5.getValue());
+
+  // Degree
+  rhoban_utils::Angle b1(-410.0, rhoban_utils::Angle::DEG);
+  rhoban_utils::Angle b2(-50.0, rhoban_utils::Angle::DEG);
+  rhoban_utils::Angle b3(0.0, rhoban_utils::Angle::DEG);
+  rhoban_utils::Angle b4(50.0, rhoban_utils::Angle::DEG);
+  rhoban_utils::Angle b5(410.0, rhoban_utils::Angle::DEG);
+
+  EXPECT_EQ(310.0, b1.getValue());
+  EXPECT_EQ(310.0, b2.getValue());
+  EXPECT_EQ(0.0, b3.getValue());
+  EXPECT_EQ(50.0, b4.getValue());
+  EXPECT_EQ(50.0, b5.getValue());
+
+  // Radian
+  rhoban_utils::Angle c1(M_PI, rhoban_utils::Angle::RAD);
+  rhoban_utils::Angle c2(2 * M_PI, rhoban_utils::Angle::RAD);
+  rhoban_utils::Angle c3(M_PI / 4, rhoban_utils::Angle::RAD);
+  rhoban_utils::Angle c4(9 * M_PI / 4, rhoban_utils::Angle::RAD);
+  rhoban_utils::Angle c5(-7 * M_PI / 4, rhoban_utils::Angle::RAD);
+  rhoban_utils::Angle c6(-M_PI / 4, rhoban_utils::Angle::RAD);
+
+  EXPECT_NEAR(180.0, c1.getValue(), EPSILON);
+  EXPECT_NEAR(0.0, c2.getValue(), EPSILON);
+  EXPECT_NEAR(45.0, c3.getValue(), EPSILON);
+  EXPECT_NEAR(45.0, c4.getValue(), EPSILON);
+  EXPECT_NEAR(45.0, c5.getValue(), EPSILON);
+  EXPECT_NEAR(315.0, c6.getValue(), EPSILON);
 }
 
 /*******************************************************
@@ -38,6 +69,23 @@ TEST(getSignedValue, testSuccess)
   EXPECT_EQ(0.0, a1.getSignedValue());
   EXPECT_EQ(50.0, a2.getSignedValue());
   EXPECT_EQ(-110.0, a3.getSignedValue());
+}
+
+/*******************************************************
+ * GetSignedValue test
+ */
+
+TEST(getSignedValueRad, testSuccess)
+{
+  rhoban_utils::Angle a1(0, rhoban_utils::Angle::RAD);
+  rhoban_utils::Angle a2(M_PI / 3, rhoban_utils::Angle::RAD);
+  rhoban_utils::Angle a3(-M_PI / 3, rhoban_utils::Angle::RAD);
+  rhoban_utils::Angle a4(5 * M_PI / 3, rhoban_utils::Angle::RAD);
+
+  EXPECT_NEAR(0.0, a1.getSignedValueRad(), EPSILON);
+  EXPECT_NEAR(M_PI / 3, a2.getSignedValueRad(), EPSILON);
+  EXPECT_NEAR(-M_PI / 3, a3.getSignedValueRad(), EPSILON);
+  EXPECT_NEAR(-M_PI / 3, a4.getSignedValueRad(), EPSILON);
 }
 
 /*******************************************************
