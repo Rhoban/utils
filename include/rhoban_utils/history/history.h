@@ -23,7 +23,9 @@ Eigen::Affine3d averageFrames(Eigen::Affine3d frameA, Eigen::Affine3d frameB, do
 class HistoryBase
 {
 public:
-  virtual ~HistoryBase(){}
+  virtual ~HistoryBase()
+  {
+  }
   virtual void setWindowSize(double window) = 0;
   virtual size_t size() const = 0;
   virtual void startNamedLog(const std::string& sessionName) = 0;
@@ -33,7 +35,7 @@ public:
   virtual double frontTimestamp() const = 0;
   virtual double backTimestamp() const = 0;
   virtual void clear() = 0;
-  virtual std::map<std::string,double> requestValue(double time_stamp) const = 0;
+  virtual std::map<std::string, double> requestValue(double time_stamp) const = 0;
 };
 
 /**
@@ -164,7 +166,8 @@ public:
     // Insert the value
     _values.push_back(entry);
     // Shrink the queue if not in logging mode
-    if (_windowSize > 0.0) {
+    if (_windowSize > 0.0)
+    {
       while (!_values.empty() && (_values.back().first - _values.front().first > _windowSize))
       {
         _values.pop_front();
@@ -424,7 +427,21 @@ public:
   TimedValue readValueFromStream(std::istream& is);
   void writeValueToStream(const TimedValue& value, std::ostream& os);
 
-  std::map<std::string,double> requestValue(double time_stamp) const;
+  std::map<std::string, double> requestValue(double time_stamp) const;
+};
+
+class HistoryBool : public History<bool>
+{
+public:
+  HistoryBool(double window = 2.0);
+
+  bool doInterpolate(bool valLow, double wLow, bool valUp, double wUp) const;
+  bool fallback() const;
+
+  TimedValue readValueFromStream(std::istream& is);
+  void writeValueToStream(const TimedValue& value, std::ostream& os);
+
+  std::map<std::string, double> requestValue(double time_stamp) const;
 };
 
 class HistoryAngle : public HistoryDouble
@@ -446,7 +463,7 @@ public:
   TimedValue readValueFromStream(std::istream& is);
   void writeValueToStream(const TimedValue& value, std::ostream& os);
 
-  std::map<std::string,double> requestValue(double time_stamp) const;
+  std::map<std::string, double> requestValue(double time_stamp) const;
 };
 
 class HistoryCollection
@@ -490,6 +507,11 @@ public:
     return get<HistoryPose>(name);
   }
 
+  HistoryBool* boolean(std::string name)
+  {
+    return get<HistoryBool>(name);
+  }
+
   /**
    * Export the history collection to the csv file `filename`.
    * The values are taken at: min, min+dt, min+2*dt, ..., max
@@ -517,9 +539,10 @@ public:
 
   void clear();
 
-  std::map<std::string, HistoryBase*> &entries();
+  std::map<std::string, HistoryBase*>& entries();
 
-  std::map<std::string,double> requestValues(double time_stamp) const;
+  std::map<std::string, double> requestValues(double time_stamp) const;
+
 protected:
   double window;
   std::mutex mutex;

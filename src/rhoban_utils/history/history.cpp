@@ -58,6 +58,49 @@ std::map<std::string, double> HistoryDouble::requestValue(double time_stamp) con
   return res;
 }
 
+HistoryBool::HistoryBool(double window) : History(window)
+{
+}
+
+bool HistoryBool::doInterpolate(bool valLow, double wLow, bool valUp, double wUp) const
+{
+  if (wLow > 0.5)
+  {
+    return valLow;
+  }
+  else
+  {
+    return valUp;
+  }
+}
+
+bool HistoryBool::fallback() const
+{
+  return false;
+}
+
+HistoryBool::TimedValue HistoryBool::readValueFromStream(std::istream& is)
+{
+  TimedValue value;
+
+  is.read((char*)&value.first, sizeof(double));
+  is.read((char*)&value.second, sizeof(bool));
+
+  return value;
+}
+
+void HistoryBool::writeValueToStream(const TimedValue& value, std::ostream& os)
+{
+  os.write((const char*)&(value.first), sizeof(double));
+  os.write((const char*)&(value.second), sizeof(bool));
+}
+
+std::map<std::string, double> HistoryBool::requestValue(double time_stamp) const
+{
+  std::map<std::string, double> res{ { "value", HistoryBool::interpolate(time_stamp) ? 1.0 : 0.0 } };
+  return res;
+}
+
 HistoryAngle::HistoryAngle(double window) : HistoryDouble(window)
 {
 }
