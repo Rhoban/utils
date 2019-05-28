@@ -72,12 +72,12 @@ void UDPBroadcast::openRead()
   }
 
   // Bind socket to listening port
-  SOCKADDR_IN addr;
+  sockaddr_in addr;
   bzero(&addr, sizeof(addr));
   addr.sin_family = AF_INET;
   addr.sin_port = htons(_portRead);
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  error = bind(_readFd, (SOCKADDR*)&addr, sizeof(addr));
+  error = bind(_readFd, (sockaddr*)&addr, sizeof(addr));
   if (error == -1)
   {
     std::cout << "ERROR: UDPBroadcast: Unable to bind read socket" << std::endl;
@@ -236,10 +236,10 @@ void UDPBroadcast::retrieveBroadcastAddress()
 
   while (ifap != NULL)
   {
-    SOCKADDR* addr = ifap->ifa_broadaddr;
+    sockaddr* addr = ifap->ifa_broadaddr;
     if (addr != NULL && addr->sa_family == AF_INET)
     {
-      _broadcastAddr.push_back(((SOCKADDR_IN*)addr)->sin_addr.s_addr);
+      _broadcastAddr.push_back(((sockaddr_in*)addr)->sin_addr.s_addr);
     }
     ifap = ifap->ifa_next;
   }

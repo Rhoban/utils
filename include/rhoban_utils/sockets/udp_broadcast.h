@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include <vector>
-#include "common.h"
 
 namespace rhoban_utils
 {
@@ -63,8 +62,8 @@ private:
   /**
    * Incomming and outcomming connection
    */
-  SOCKET _readFd;
-  SOCKET _writeFd;
+  int _readFd;
+  int _writeFd;
 
   /**
    * Count the number of send packets since
