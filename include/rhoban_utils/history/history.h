@@ -250,7 +250,7 @@ public:
   /**
    * Do the actual interpolation between valLow and valHigh
    */
-  virtual T doInterpolate(T valLow, double wLow, T valUp, double wUp) const = 0;
+  virtual T doInterpolate(const T& valLow, double wLow, const T& valUp, double wUp) const = 0;
   virtual T fallback() const = 0;
 
   /**
@@ -421,7 +421,7 @@ class HistoryDouble : public History<double>
 public:
   HistoryDouble(double window = 2.0);
 
-  double doInterpolate(double valLow, double wLow, double valUp, double wUp) const;
+  double doInterpolate(const double& valLow, double wLow, const double& valUp, double wUp) const;
   double fallback() const;
 
   TimedValue readValueFromStream(std::istream& is);
@@ -435,7 +435,7 @@ class HistoryBool : public History<bool>
 public:
   HistoryBool(double window = 2.0);
 
-  bool doInterpolate(bool valLow, double wLow, bool valUp, double wUp) const;
+  bool doInterpolate(const bool& valLow, double wLow, const bool& valUp, double wUp) const;
   bool fallback() const;
 
   TimedValue readValueFromStream(std::istream& is);
@@ -449,7 +449,7 @@ class HistoryAngle : public HistoryDouble
 public:
   HistoryAngle(double window = 2.0);
 
-  double doInterpolate(double valLow, double wLow, double valHigh, double wHigh) const;
+  double doInterpolate(const double& valLow, double wLow, const double& valHigh, double wHigh) const;
 };
 
 class HistoryPose : public History<Eigen::Affine3d>
@@ -457,7 +457,8 @@ class HistoryPose : public History<Eigen::Affine3d>
 public:
   HistoryPose(double window = 2.0);
 
-  Eigen::Affine3d doInterpolate(Eigen::Affine3d valLow, double wLow, Eigen::Affine3d valHigh, double wHigh) const;
+  Eigen::Affine3d doInterpolate(const Eigen::Affine3d& valLow, double wLow, const Eigen::Affine3d& valHigh,
+                                double wHigh) const;
   Eigen::Affine3d fallback() const;
 
   /**

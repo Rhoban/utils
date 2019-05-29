@@ -26,7 +26,7 @@ HistoryDouble::HistoryDouble(double window) : History(window)
 {
 }
 
-double HistoryDouble::doInterpolate(double valLow, double wLow, double valUp, double wUp) const
+double HistoryDouble::doInterpolate(const double& valLow, double wLow, const double& valUp, double wUp) const
 {
   return wLow * valLow + wUp * valUp;
 }
@@ -62,7 +62,7 @@ HistoryBool::HistoryBool(double window) : History(window)
 {
 }
 
-bool HistoryBool::doInterpolate(bool valLow, double wLow, bool valUp, double wUp) const
+bool HistoryBool::doInterpolate(const bool& valLow, double wLow, const bool& valUp, double wUp) const
 {
   if (wLow > 0.5)
   {
@@ -105,7 +105,7 @@ HistoryAngle::HistoryAngle(double window) : HistoryDouble(window)
 {
 }
 
-double HistoryAngle::doInterpolate(double valLow, double wLow, double valUp, double wUp) const
+double HistoryAngle::doInterpolate(const double& valLow, double wLow, const double& valUp, double wUp) const
 {
   Angle angleLow(rad2deg(valLow));
   Angle angleUp(rad2deg(valUp));
@@ -145,7 +145,7 @@ void HistoryPose::writeValueToStream(const HistoryPose::TimedValue& value, std::
   os.write((const char*)&(values), sizeof(values));
 }
 
-Eigen::Affine3d HistoryPose::doInterpolate(Eigen::Affine3d valLow, double wLow, Eigen::Affine3d valHigh,
+Eigen::Affine3d HistoryPose::doInterpolate(const Eigen::Affine3d& valLow, double wLow, const Eigen::Affine3d& valHigh,
                                            double wHigh) const
 {
   return averageFrames(valLow, valHigh, wHigh);
@@ -180,7 +180,7 @@ std::map<std::string, double> HistoryPose::requestValue(double time_stamp) const
   return res;
 }
 
-HistoryCollection::HistoryCollection(double window) : mutex(), window(window)
+HistoryCollection::HistoryCollection(double window) : window(window), mutex()
 {
 }
 
