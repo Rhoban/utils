@@ -85,7 +85,6 @@ set(TESTS
   threading/multi_core
   # threading/mutex not tested -> adapter for mutex API
   # threading/thread not tested -> adapter for thread API
-  timing/chrono
 #  timing/benchmark # TO be fixed: private variables
   timing/time_stamp
   timing/elapse_tick
