@@ -30,6 +30,11 @@ std::string getBaseName(const std::string& path);
 /// Remark: getDirName("file.cpp") returns "./"
 std::string getDirName(const std::string& path);
 
+/**
+ * Return the name of current host, throws runtime error on failure
+ */
+std::string getHostName();
+
 /// Append vector 'v' to the stream 'out', ensuring the following content is
 /// added (spaces are present only for readability):
 /// prefix v[0] separator v[1] ... separator v[n] suffix
