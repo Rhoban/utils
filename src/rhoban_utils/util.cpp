@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <sys/stat.h>
 #include <iostream>
 #include <fstream>
@@ -87,6 +88,17 @@ std::string getDirName(const std::string& path)
     oss << elems[idx] << "/";
   }
   return oss.str();
+}
+
+std::string getHostName()
+{
+  char buffer[100];
+  int ret = gethostname(buffer, 100);
+  if (ret != 0)
+  {
+    throw std::runtime_error(DEBUG_INFO + " failed 'gethostname': " + std::to_string(ret));
+  }
+  return buffer;
 }
 
 }  // namespace rhoban_utils
