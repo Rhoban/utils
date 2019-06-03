@@ -41,11 +41,12 @@ Json::Value file2Json(const std::string& path)
   return json_content;
 }
 
-void writeJson(const Json::Value & v, const std::string & path, bool human)
+void writeJson(const Json::Value& v, const std::string& path, bool human)
 {
   std::string content = json2String(v, human);
   std::ofstream output(path);
-  if (!output.good()) {
+  if (!output.good())
+  {
     throw std::runtime_error(DEBUG_INFO + "failed to open file at '" + path + "'");
   }
   output << content;
@@ -229,6 +230,22 @@ std::string getJsonVal<std::string>(const Json::Value& v)
 }
 
 template <>
+Eigen::Quaterniond getJsonVal<Eigen::Quaterniond>(const Json::Value& v)
+{
+  if (!v.isArray())
+  {
+    throw JsonParsingError("Expecting an array.");
+  }
+  if (v.size() != 4)
+  {
+    throw JsonParsingError("Expecting an array of size 4.");
+  }
+
+  return Eigen::Quaterniond(getJsonVal<double>(v[0]), getJsonVal<double>(v[1]), getJsonVal<double>(v[2]),
+                            getJsonVal<double>(v[3]));
+}
+
+template <>
 Json::Value val2Json<bool>(const bool& val)
 {
   return Json::Value(val);
@@ -262,6 +279,17 @@ template <>
 Json::Value val2Json<std::string>(const std::string& val)
 {
   return Json::Value(val);
+}
+
+template <>
+Json::Value val2Json<Eigen::Quaterniond>(const Eigen::Quaterniond& val)
+{
+  Json::Value v;
+  v.append(val.w());
+  v.append(val.x());
+  v.append(val.y());
+  v.append(val.z());
+  return v;
 }
 
 template <>

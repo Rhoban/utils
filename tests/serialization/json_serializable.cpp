@@ -239,6 +239,58 @@ TEST(getJsonVal, TestStringExeption)
   }
 }
 
+TEST(getJsonVal, TestQuaterniondSuccess)
+{
+  Json::Value v;
+  v[0] = 1;
+  v[1] = 0;
+  v[2] = 0;
+  v[3] = 0;
+  Eigen::Quaterniond result;
+  result = getJsonVal<Eigen::Quaterniond>(v);
+
+  Eigen::Quaterniond expected(1, 0, 0, 0);
+
+  EXPECT_EQ(expected.w(), result.w());
+  EXPECT_EQ(expected.x(), result.x());
+  EXPECT_EQ(expected.y(), result.y());
+  EXPECT_EQ(expected.z(), result.z());
+}
+
+TEST(getJsonVal, TestQuaterniondArrayException)
+{
+  Json::Value v;
+  v["key1"] = "value1";
+
+  try
+  {
+    getJsonVal<Eigen::Quaterniond>(v["key1"]);
+    FAIL();
+  }
+  catch (JsonParsingError& err)
+  {
+    EXPECT_EQ(err.what(), std::string("Expecting an array."));
+  }
+}
+
+TEST(getJsonVal, TestQuaterniondArraySizeException)
+{
+  Json::Value v;
+  v[0] = 1;
+  v[1] = 0;
+  v[2] = 0;
+
+  try
+  {
+    getJsonVal<Eigen::Quaterniond>(v);
+    FAIL();
+  }
+  catch (JsonParsingError& err)
+  {
+    EXPECT_EQ(err.what(), std::string("Expecting an array of size 4."));
+  }
+}
+
 TEST(getJsonVal, TestVector2dSuccess)
 {
   Json::Value v;

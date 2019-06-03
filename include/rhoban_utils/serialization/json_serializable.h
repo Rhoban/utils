@@ -3,6 +3,7 @@
 #include <json/json.h>
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include <exception>
 #include <set>
@@ -17,7 +18,7 @@ public:
 
 Json::Value file2Json(const std::string& path);
 
-void writeJson(const Json::Value & v, const std::string & path, bool human=true);
+void writeJson(const Json::Value& v, const std::string& path, bool human = true);
 
 class JsonSerializable
 {
@@ -85,6 +86,8 @@ template <>
 double getJsonVal<double>(const Json::Value& v);
 template <>
 std::string getJsonVal<std::string>(const Json::Value& v);
+template <>
+Eigen::Quaterniond getJsonVal<Eigen::Quaterniond>(const Json::Value& v);
 
 /// There is no default val2Json
 template <typename T>
@@ -102,6 +105,12 @@ template <>
 Json::Value val2Json<double>(const double& val);
 template <>
 Json::Value val2Json<std::string>(const std::string& val);
+
+/// Serialisation of quaternions
+/// We should be carefull about the order w,x,y,z or x,y,z,w
+/// The convention we use is w,x,y,z
+template <>
+Json::Value val2Json<Eigen::Quaterniond>(const Eigen::Quaterniond& val);
 
 /// Return an object of type 'T' if v[key] exists and is of type 'T'.
 /// Otherwise: throws a JsonParsingError
