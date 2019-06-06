@@ -11,6 +11,7 @@ namespace rhoban_utils
 {
 double chi2_cdf(double x, double k)
 {
+  (void)k;
   return sqrt(x);
   /*
   boost::math::chi_squared mydist(k);
