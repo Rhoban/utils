@@ -178,7 +178,7 @@ ostream& operator<<(ostream& out, const Angle& a)
 double normalizeRad(double angleRad)
 {
   double value = fmod(angleRad, 2 * M_PI);  // Bound in [-2*pi, 2*pi]
-  if (value < -M_PI)
+  if (value <= -M_PI)
   {
     value += 2 * M_PI;
   }
@@ -187,6 +187,11 @@ double normalizeRad(double angleRad)
     value -= 2 * M_PI;
   }
   return value;
+}
+
+double normalizeDeg(double angleDeg)
+{
+  return rad2deg(normalizeRad(deg2rad(angleDeg)));
 }
 
 template <>

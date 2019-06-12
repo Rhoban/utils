@@ -567,6 +567,21 @@ TEST(normalizeRad, testSuccess)
   EXPECT_EQ(rhoban_utils::normalizeRad(M_PI), M_PI);
   EXPECT_EQ(rhoban_utils::normalizeRad(3 * M_PI / 2), -1 * M_PI / 2);
   EXPECT_EQ(rhoban_utils::normalizeRad(-1 * M_PI / 2), -1 * M_PI / 2);
+  EXPECT_EQ(rhoban_utils::normalizeRad(-1 * M_PI), M_PI);
+}
+
+/*******************************************************
+ * normalizeDeg test
+ */
+
+TEST(normalizeDeg, testSuccess)
+{
+  EXPECT_EQ(rhoban_utils::normalizeDeg(0), 0);
+  EXPECT_EQ(rhoban_utils::normalizeDeg(45), 45);
+  EXPECT_EQ(rhoban_utils::normalizeDeg(180), 180);
+  EXPECT_EQ(rhoban_utils::normalizeDeg(270), -90);
+  EXPECT_EQ(rhoban_utils::normalizeDeg(-90), -90);
+  EXPECT_EQ(rhoban_utils::normalizeDeg(-180), 180);
 }
 
 /*******************************************************
