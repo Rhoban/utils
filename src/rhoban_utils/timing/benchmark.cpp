@@ -20,7 +20,7 @@ namespace rhoban_utils
 /* Static variables */
 Benchmark* Benchmark::current = NULL;
 
-Benchmark::Benchmark(Benchmark* f, const std::string& n) : father(f), name(n), elapsedTicks(0), nbIterations(0)
+Benchmark::Benchmark(Benchmark* f, const std::string& n) : father(f), name(n), elapsedSec(0), nbIterations(0)
 {
   startSession();
 }
@@ -42,17 +42,13 @@ Benchmark::~Benchmark()
 
 void Benchmark::startSession()
 {
-#ifndef WIN32
   openingTime = steady_clock::now();
-#endif
 }
 
 void Benchmark::endSession()
 {
-#ifndef WIN32
   closingTime = steady_clock::now();
-#endif
-  elapsedTicks += double((closingTime - openingTime).count());
+  elapsedSec += diffSec(openingTime, closingTime);
   nbIterations++;
 }
 
@@ -131,8 +127,7 @@ double Benchmark::closeUntil(const std::string& stopName)
 
 double Benchmark::getTime() const
 {
-  double time = elapsedTicks * steady_clock::period::num / steady_clock::period::den;
-  return time;
+  return elapsedSec;
 }
 
 double Benchmark::getSubTime() const

@@ -9,13 +9,27 @@ namespace rhoban_utils
 TimeStamp::TimeStamp()
 {
 }
-TimeStamp::TimeStamp(const time_point<steady_clock>& timePoint) : time_point<steady_clock>(timePoint)
+TimeStamp::TimeStamp(const time_point<steady_clock>& timePoint) : monotonic_clock(timePoint)
+{
+  uint64_t us_base = duration_cast<duration<uint64_t, std::micro>>(monotonic_clock.time_since_epoch()).count();
+  uint64_t us_epoch = us_base + getSteadyClockOffset();
+  utc_clock = time_point<system_clock>(microseconds(us_epoch));
+}
+
+TimeStamp::TimeStamp(const time_point<steady_clock>& monotonic, const time_point<system_clock>& system)
+  : monotonic_clock(monotonic), utc_clock(system)
 {
 }
 
 TimeStamp TimeStamp::now()
 {
-  return TimeStamp(steady_clock::now());
+  return TimeStamp(steady_clock::now(), system_clock::now());
+}
+
+TimeStamp TimeStamp::addMS(int64_t ms_offset) const
+{
+  duration<int64_t, std::milli> offset(ms_offset);
+  return TimeStamp(monotonic_clock + offset, utc_clock + offset);
 }
 
 TimeStamp TimeStamp::fromMS(unsigned long msSinceEpoch)
@@ -23,14 +37,27 @@ TimeStamp TimeStamp::fromMS(unsigned long msSinceEpoch)
   return TimeStamp(time_point<steady_clock>(milliseconds(msSinceEpoch)));
 }
 
-double TimeStamp::getTimeSec() const
+double TimeStamp::getTimeSec(bool utc) const
 {
-  return getTimeMS() / 1000;
+  return getTimeMS(utc) / 1000;
 }
 
-double TimeStamp::getTimeMS() const
+double TimeStamp::getTimeMS(bool utc) const
 {
-  return duration_cast<std::chrono::duration<double, std::milli>>(time_since_epoch()).count();
+  if (utc)
+  {
+    return duration_cast<duration<double, std::milli>>(utc_clock.time_since_epoch()).count();
+  }
+  return duration_cast<duration<double, std::milli>>(monotonic_clock.time_since_epoch()).count();
+}
+
+uint64_t TimeStamp::getTimeUS(bool utc) const
+{
+  if (utc)
+  {
+    return duration_cast<duration<uint64_t, std::micro>>(utc_clock.time_since_epoch()).count();
+  }
+  return duration_cast<duration<uint64_t, std::micro>>(monotonic_clock.time_since_epoch()).count();
 }
 
 std::string getFormattedTime()
@@ -54,15 +81,14 @@ int64_t getSteadyClockOffset()
 
 }  // namespace rhoban_utils
 
-double diffSec(const rhoban_utils::TimeStamp& src, const rhoban_utils::TimeStamp& dst)
+double diffSec(const rhoban_utils::TimeStamp& src, const rhoban_utils::TimeStamp& dst, bool utc)
 {
-  double elapsedTicks = (dst - src).count();
-  return elapsedTicks * steady_clock::period::num / steady_clock::period::den;
+  return dst.getTimeSec(utc) - src.getTimeSec(utc);
 }
 
-double diffMs(const rhoban_utils::TimeStamp& src, const rhoban_utils::TimeStamp& dst)
+double diffMs(const rhoban_utils::TimeStamp& src, const rhoban_utils::TimeStamp& dst, bool utc)
 {
-  return diffSec(src, dst) * 1000;
+  return dst.getTimeMS(utc) - src.getTimeMS(utc);
 }
 
 bool operator<(const rhoban_utils::TimeStamp& ts1, const rhoban_utils::TimeStamp& ts2)

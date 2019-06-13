@@ -25,7 +25,7 @@ private:
   std::string name;
   TimeStamp openingTime;
   TimeStamp closingTime;
-  double elapsedTicks;
+  double elapsedSec;
   int nbIterations;
   std::map<std::string, Benchmark*> children;
 
