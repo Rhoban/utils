@@ -472,6 +472,21 @@ public:
   std::map<std::string, double> requestValue(double time_stamp) const;
 };
 
+class HistoryVector3d : public History<Eigen::Vector3d>
+{
+public:
+  HistoryVector3d(double window = 2.0);
+
+  Eigen::Vector3d doInterpolate(const Eigen::Vector3d& valLow, double wLow, const Eigen::Vector3d& valHigh,
+                                double wHigh) const;
+  Eigen::Vector3d fallback() const;
+
+  TimedValue readValueFromStream(std::istream& is);
+  void writeValueToStream(const TimedValue& value, std::ostream& os);
+
+  std::map<std::string, double> requestValue(double time_stamp) const;
+};
+
 class HistoryCollection
 {
 public:

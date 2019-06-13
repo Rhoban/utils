@@ -180,6 +180,53 @@ std::map<std::string, double> HistoryPose::requestValue(double time_stamp) const
   return res;
 }
 
+HistoryVector3d::HistoryVector3d(double window) : History(window)
+{
+}
+
+HistoryVector3d::TimedValue HistoryVector3d::readValueFromStream(std::istream& is)
+{
+  HistoryVector3d::TimedValue value;
+
+  double values[3];
+
+  is.read((char*)&value.first, sizeof(double));
+  is.read((char*)&values, sizeof(values));
+
+  value.second = Eigen::Vector3d(values[0], values[1], values[2]);
+
+  return value;
+}
+
+void HistoryVector3d::writeValueToStream(const HistoryVector3d::TimedValue& value, std::ostream& os)
+{
+  double values[3] = { value.second.x(), value.second.y(), value.second.z() };
+
+  os.write((const char*)&(value.first), sizeof(double));
+  os.write((const char*)&(values), sizeof(values));
+}
+
+Eigen::Vector3d HistoryVector3d::doInterpolate(const Eigen::Vector3d& valLow, double wLow,
+                                               const Eigen::Vector3d& valHigh, double wHigh) const
+{
+  return (valLow * wLow + valHigh * wHigh) / (wLow + wHigh);
+}
+
+Eigen::Vector3d HistoryVector3d::fallback() const
+{
+  return Eigen::Vector3d::Zero();
+}
+
+std::map<std::string, double> HistoryVector3d::requestValue(double time_stamp) const
+{
+  std::map<std::string, double> res;
+  Eigen::Vector3d pos = interpolate(time_stamp);
+  res["x"] = pos.x();
+  res["y"] = pos.y();
+  res["z"] = pos.z();
+  return res;
+}
+
 HistoryCollection::HistoryCollection(double window) : window(window), mutex()
 {
 }
