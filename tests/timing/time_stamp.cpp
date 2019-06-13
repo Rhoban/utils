@@ -30,41 +30,34 @@ TEST(time_stamp, testTime_stamp1)
   EXPECT_GT(time_stamp->getTimeMS(), time_span.count());
 }
 
-// test diffSec between two time stamp on seconds
-TEST(time_stamp, testDifSec)
-{
-  const TimeStamp* time_stamp1 = new TimeStamp(std::chrono::steady_clock::now());
-  const TimeStamp* time_stamp2 = new TimeStamp(std::chrono::steady_clock::now());
-
-  // diffS should be > 0
-  double diffS = diffSec(*time_stamp1, *time_stamp2);
-
-  EXPECT_GT(diffS, 0);
-}
-// test diffSec between two time stamp on milli seconds
-TEST(time_stamp, testDifMSec)
-{
-  const TimeStamp* time_stamp1 = new TimeStamp(std::chrono::steady_clock::now());
-  const TimeStamp* time_stamp2 = new TimeStamp(std::chrono::steady_clock::now());
-
-  double diffMsec = diffMs(*time_stamp1, *time_stamp2);
-
-  // diffMsec should be > 0
-  EXPECT_GT(diffMsec, 0);
-}
-
 // test diffSec and diffMs between two time stamp
-TEST(time_stamp, testDifSecMSec)
+TEST(time_stamp, timeDiff)
 {
-  const TimeStamp* time_stamp1 = new TimeStamp(std::chrono::steady_clock::now());
-  const TimeStamp* time_stamp2 = new TimeStamp(std::chrono::steady_clock::now());
+  int wait_time_us = 5000;
+  TimeStamp time_stamp1 = TimeStamp::now();
+  usleep(wait_time_us);
+  TimeStamp time_stamp2 = TimeStamp::now();
 
-  double sec = diffSec(*time_stamp1, *time_stamp2);
-  double msec = diffMs(*time_stamp1, *time_stamp2);
+  for (bool utc : { true, false })
+  {
+    double measured_sec = diffSec(time_stamp1, time_stamp2, utc);
+    double measured_ms = diffMs(time_stamp1, time_stamp2, utc);
+    double expected_ms = wait_time_us / 1000.0;
+    double expected_sec = expected_ms / 1000.0;
+    double tol_ms = 1.0;
 
-  // msec should be equal to sec*1000
-  EXPECT_EQ(msec, sec * 1000);
+    EXPECT_NEAR(expected_ms, measured_ms, tol_ms);
+    EXPECT_NEAR(expected_sec, measured_sec, tol_ms / 1000);
+  }
 }
+
+TEST(time_stamp, fromMS)
+{
+  int ms_input = 50021;
+  TimeStamp t = TimeStamp::fromMS(ms_input);
+  EXPECT_FLOAT_EQ(ms_input, t.getTimeMS());
+}
+
 // test operator witch should return true if diffMs (time_stamp1 ,time_stamp2) > 0
 // return false if diffMs (time_stamp1 ,time_stamp2) < 0
 TEST(time_stamp, operator_m)
