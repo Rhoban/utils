@@ -64,6 +64,7 @@ HistoryBool::HistoryBool(double window) : History(window)
 
 bool HistoryBool::doInterpolate(const bool& valLow, double wLow, const bool& valUp, double wUp) const
 {
+  (void)wUp;
   if (wLow > 0.5)
   {
     return valLow;
@@ -148,6 +149,7 @@ void HistoryPose::writeValueToStream(const HistoryPose::TimedValue& value, std::
 Eigen::Affine3d HistoryPose::doInterpolate(const Eigen::Affine3d& valLow, double wLow, const Eigen::Affine3d& valHigh,
                                            double wHigh) const
 {
+  (void)wLow;
   return averageFrames(valLow, valHigh, wHigh);
 }
 
