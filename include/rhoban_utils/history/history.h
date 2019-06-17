@@ -82,7 +82,7 @@ public:
   /**
    * Return first and last recorded point
    */
-  const TimedValue& front() const
+  TimedValue front() const
   {
     if (_values.size() == 0)
     {
@@ -109,7 +109,7 @@ public:
     }
   }
 
-  const TimedValue& back() const
+  TimedValue back() const
   {
     if (_values.size() == 0)
     {
