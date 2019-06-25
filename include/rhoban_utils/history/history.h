@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <deque>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -41,8 +40,7 @@ public:
 /**
  * History
  *
- * Class for queue past value and
- * interpole them back in the past.
+ * Class for storing values and interpole them back in the past.
  */
 template <typename T>
 class History : public HistoryBase
@@ -93,20 +91,13 @@ public:
     }
     else
     {
-      return _values.front();
+      return *(_values.begin());
     }
   }
 
   virtual double frontTimestamp() const
   {
-    if (_values.size() == 0)
-    {
-      return 0;
-    }
-    else
-    {
-      return _values.front().first;
-    }
+    return front().first;
   }
 
   TimedValue back() const
@@ -120,64 +111,50 @@ public:
     }
     else
     {
-      return _values.back();
+      return *(_values.rbegin());
     }
   }
 
   virtual double backTimestamp() const
   {
-    if (_values.size() == 0)
-    {
-      return 0;
-    }
-    else
-    {
-      return _values.back().first;
-    }
+    return back().first;
   }
 
   /**
-   * Insert a new value in the container
-   * with given timestamp and value
+   * Insert a new value in the container with given timestamp and value
+   * if ordered is true, a logic_error is thrown if timestamp is smaller than the largest timestamp contained in history
    */
-  void pushValue(double timestamp, T value)
+  void pushValue(double timestamp, T value, bool ordered = true)
   {
     // Lock
     _mutex.lock();
     // Check that timestamp is increasing
-    if (_values.size() > 0 && timestamp < _values.back().first)
+    if (ordered && _values.size() > 0 && timestamp < backTimestamp())
     {
       _mutex.unlock();
 
       std::ostringstream os;
-      os << "History invalid timestamp (" << timestamp << " / " << _values.back().first << ")" << std::endl;
+      os << "History invalid timestamp (" << timestamp << " / " << back().first << ")" << std::endl;
       throw std::logic_error(os.str());
     }
-    if (_values.size() > 0 && timestamp == _values.back().first)
+    if (_values.count(timestamp) > 0)
     {
       _mutex.unlock();
       return;
     }
 
-    TimedValue entry;
-    entry.first = timestamp;
-    entry.second = value;
-
     // Insert the value
-    _values.push_back(entry);
+    _values[timestamp] = value;
     // Shrink the queue if not in logging mode
     if (_windowSize > 0.0)
     {
-      while (!_values.empty() && (_values.back().first - _values.front().first > _windowSize))
-      {
-        _values.pop_front();
-      }
+      _values.erase(_values.begin(), _values.lower_bound(backTimestamp() - _windowSize));
     }
 
     // Write new entries for all named sessions
     for (auto& namedLog : _activeLogs)
     {
-      namedLog.second->push_back(entry);
+      namedLog.second->operator[](timestamp) = value;
     }
     // Unlock
     _mutex.unlock();
@@ -199,43 +176,25 @@ public:
       _mutex.unlock();
       return fallback();
     }
-    else if (_values.size() == 1)
+    else if (timestamp <= frontTimestamp())
     {
       _mutex.unlock();
-      return _values.front().second;
+      return front().second;
     }
-    else if (timestamp <= _values.front().first)
+    else if (timestamp >= backTimestamp())
     {
       _mutex.unlock();
-      return _values.front().second;
-    }
-    else if (timestamp >= _values.back().first)
-    {
-      _mutex.unlock();
-      return _values.back().second;
+      return back().second;
     }
 
-    // Bijection search
-    size_t indexLow = 0;
-    size_t indexUp = _values.size() - 1;
-    while (indexUp - indexLow > 1)
-    {
-      size_t indexMiddle = (indexLow + indexUp) / 2;
-      if (_values[indexMiddle].first <= timestamp)
-      {
-        indexLow = indexMiddle;
-      }
-      else
-      {
-        indexUp = indexMiddle;
-      }
-    }
-
-    // Retrieve lower and upper bound values
-    double tsLow = _values[indexLow].first;
-    T valLow = _values[indexLow].second;
-    double tsUp = _values[indexUp].first;
-    T valUp = _values[indexUp].second;
+    // It is now sure that timestamp is in the interval
+    auto iterator = _values.upper_bound(timestamp);
+    double tsUp = iterator->first;
+    T valUp = iterator->second;
+    // There is necessary a predecessor since iterator->first > timestamp and _values.begin()->first < timestamp
+    iterator--;
+    double tsLow = iterator->first;
+    T valLow = iterator->second;
 
     // Unlock
     _mutex.unlock();
@@ -265,7 +224,7 @@ public:
       _mutex.unlock();
       throw std::logic_error(DEBUG_INFO + " there is already a session with name '" + sessionName + "'");
     }
-    _activeLogs[sessionName] = std::unique_ptr<std::deque<TimedValue>>(new std::deque<TimedValue>());
+    _activeLogs[sessionName] = std::unique_ptr<std::map<double, T>>(new std::map<double, T>());
     _mutex.unlock();
   }
 
@@ -304,7 +263,7 @@ public:
       _mutex.unlock();
       throw std::logic_error(DEBUG_INFO + " there is no open session with name '" + sessionName + "'");
     }
-    std::unique_ptr<std::deque<TimedValue>> values = std::move(_frozenLogs[sessionName]);
+    std::unique_ptr<std::map<double, T>> values = std::move(_frozenLogs[sessionName]);
     _frozenLogs.erase(sessionName);
     _mutex.unlock();
 
@@ -348,20 +307,20 @@ public:
       newValue.first += timeShift;
 
       // Check that timestamp is increasing
-      if (_values.size() > 0 && newValue.first <= _values.back().first)
+      if (_values.size() > 0 && newValue.first <= frontTimestamp())
       {
         _mutex.unlock();
         throw std::runtime_error("History invalid timestamp");
       }
       // Insert the value
-      _values.push_back(newValue);
+      _values[newValue.first] = newValue.second;
     }
   }
 
   /**
    * Getting all values
    */
-  std::deque<TimedValue> getValues()
+  std::map<double, T> getValues()
   {
     return _values;
   }
@@ -378,7 +337,7 @@ private:
   /**
    * Write the history to the provided stream
    */
-  void writeBinary(const std::deque<TimedValue>& values, std::ostream& os)
+  void writeBinary(const std::map<double, T>& values, std::ostream& os)
   {
     // When writing in binary, use all values
     size_t size = values.size();
@@ -404,16 +363,16 @@ private:
    * Values container indexed
    * by their timestamp
    */
-  std::deque<TimedValue> _values;
+  std::map<double, T> _values;
 
   /**
    * Named log sessions to which the object is actively writting
    */
-  std::map<std::string, std::unique_ptr<std::deque<TimedValue>>> _activeLogs;
+  std::map<std::string, std::unique_ptr<std::map<double, T>>> _activeLogs;
   /**
    * Named log sessions waiting to be written
    */
-  std::map<std::string, std::unique_ptr<std::deque<TimedValue>>> _frozenLogs;
+  std::map<std::string, std::unique_ptr<std::map<double, T>>> _frozenLogs;
 };
 
 class HistoryDouble : public History<double>
