@@ -4,10 +4,10 @@
 
 namespace rhoban_utils
 {
-double average(std::vector<double> values);
+double average(const std::vector<double>& values);
 
-double variance(std::vector<double> values, double* avg = nullptr);
+double variance(const std::vector<double>& values, double* avg = nullptr);
 
-double standardDeviation(std::vector<double> values, double* avg = nullptr);
+double standardDeviation(const std::vector<double>& values, double* avg = nullptr);
 
 }  // namespace rhoban_utils

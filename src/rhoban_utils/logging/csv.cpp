@@ -41,7 +41,7 @@ void CSV::newLine()
   for (unsigned int index = 0; index < columns.size(); index++)
   {
     ofs << values[index];
-    if(index != columns.size()-1)
+    if (index != columns.size() - 1)
       ofs << separator;
   }
   ofs << std::endl;
@@ -50,10 +50,6 @@ void CSV::newLine()
 
 void CSV::produceHeader()
 {
-  for (unsigned int index = 0; index < columnIndexes.size(); index++)
-  {
-    ofs << "# " << index << ": " << columnIndexes[index] << std::endl;
-  }
   for (unsigned int index = 0; index < columnIndexes.size(); index++)
   {
     ofs << columnIndexes[index];

@@ -3,7 +3,7 @@
 
 namespace rhoban_utils
 {
-double average(std::vector<double> values)
+double average(const std::vector<double>& values)
 {
   if (values.size())
   {
@@ -22,7 +22,7 @@ double average(std::vector<double> values)
   }
 }
 
-double variance(std::vector<double> values, double* avg_)
+double variance(const std::vector<double>& values, double* avg_)
 {
   double avg = average(values);
 
@@ -48,7 +48,7 @@ double variance(std::vector<double> values, double* avg_)
   }
 }
 
-double standardDeviation(std::vector<double> values, double* avg)
+double standardDeviation(const std::vector<double>& values, double* avg)
 {
   return sqrt(variance(values, avg));
 }
