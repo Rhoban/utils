@@ -35,6 +35,7 @@ public:
   virtual double backTimestamp() const = 0;
   virtual void clear() = 0;
   virtual std::map<std::string, double> requestValue(double time_stamp) const = 0;
+  virtual HistoryBase* clone() = 0;
 };
 
 /**
@@ -333,7 +334,7 @@ public:
     _values.clear();
   }
 
-private:
+protected:
   /**
    * Write the history to the provided stream
    */
@@ -387,6 +388,7 @@ public:
   void writeValueToStream(const TimedValue& value, std::ostream& os);
 
   std::map<std::string, double> requestValue(double time_stamp) const;
+  HistoryBase* clone();
 };
 
 class HistoryBool : public History<bool>
@@ -401,6 +403,7 @@ public:
   void writeValueToStream(const TimedValue& value, std::ostream& os);
 
   std::map<std::string, double> requestValue(double time_stamp) const;
+  HistoryBase* clone();
 };
 
 class HistoryAngle : public HistoryDouble
@@ -409,6 +412,7 @@ public:
   HistoryAngle(double window = 2.0);
 
   double doInterpolate(const double& valLow, double wLow, const double& valHigh, double wHigh) const;
+  HistoryBase* clone();
 };
 
 class HistoryPose : public History<Eigen::Affine3d>
@@ -429,6 +433,7 @@ public:
   void writeValueToStream(const TimedValue& value, std::ostream& os);
 
   std::map<std::string, double> requestValue(double time_stamp) const;
+  HistoryBase* clone();
 };
 
 class HistoryVector3d : public History<Eigen::Vector3d>
@@ -444,12 +449,16 @@ public:
   void writeValueToStream(const TimedValue& value, std::ostream& os);
 
   std::map<std::string, double> requestValue(double time_stamp) const;
+  HistoryBase* clone();
 };
 
 class HistoryCollection
 {
 public:
   HistoryCollection(double window = 2.0);
+  // Copy constructor (might not be thread safe if other object is accessed in same time)
+  HistoryCollection(const HistoryCollection& other);
+
   virtual ~HistoryCollection();
 
   template <typename T>

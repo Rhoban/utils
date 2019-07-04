@@ -52,6 +52,20 @@ void HistoryDouble::writeValueToStream(const TimedValue& value, std::ostream& os
   os.write((const char*)&(value.second), sizeof(double));
 }
 
+HistoryBase* HistoryDouble::clone()
+{
+  HistoryBase* copy = new HistoryDouble(_windowSize);
+  *copy = *this;
+  return copy;
+}
+
+HistoryBase* HistoryAngle::clone()
+{
+  HistoryBase* copy = new HistoryAngle(_windowSize);
+  *copy = *this;
+  return copy;
+}
+
 std::map<std::string, double> HistoryDouble::requestValue(double time_stamp) const
 {
   std::map<std::string, double> res{ { "value", HistoryDouble::interpolate(time_stamp) } };
@@ -94,6 +108,13 @@ void HistoryBool::writeValueToStream(const TimedValue& value, std::ostream& os)
 {
   os.write((const char*)&(value.first), sizeof(double));
   os.write((const char*)&(value.second), sizeof(bool));
+}
+
+HistoryBase* HistoryBool::clone()
+{
+  HistoryBase* copy = new HistoryBool(_windowSize);
+  *copy = *this;
+  return copy;
 }
 
 std::map<std::string, double> HistoryBool::requestValue(double time_stamp) const
@@ -166,6 +187,13 @@ Eigen::Affine3d HistoryPose::getDiff(double t1, double t2) const
   return t2_from_x * x_from_t1;
 }
 
+HistoryBase* HistoryPose::clone()
+{
+  HistoryBase* copy = new HistoryPose(_windowSize);
+  *copy = *this;
+  return copy;
+}
+
 std::map<std::string, double> HistoryPose::requestValue(double time_stamp) const
 {
   std::map<std::string, double> res;
@@ -219,6 +247,13 @@ Eigen::Vector3d HistoryVector3d::fallback() const
   return Eigen::Vector3d::Zero();
 }
 
+HistoryBase* HistoryVector3d::clone()
+{
+  HistoryBase* copy = new HistoryVector3d(_windowSize);
+  *copy = *this;
+  return copy;
+}
+
 std::map<std::string, double> HistoryVector3d::requestValue(double time_stamp) const
 {
   std::map<std::string, double> res;
@@ -231,6 +266,16 @@ std::map<std::string, double> HistoryVector3d::requestValue(double time_stamp) c
 
 HistoryCollection::HistoryCollection(double window) : window(window), mutex()
 {
+}
+
+HistoryCollection::HistoryCollection(const HistoryCollection& other)
+{
+  window = other.window;
+
+  for (auto& entry : other._histories)
+  {
+    _histories[entry.first] = entry.second->clone();
+  }
 }
 
 HistoryCollection::~HistoryCollection()
