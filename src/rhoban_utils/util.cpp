@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <cmath>
 #include <ctime>
 #include <cerrno>
 #include <iomanip>
@@ -99,6 +100,16 @@ std::string getHostName()
     throw std::runtime_error(DEBUG_INFO + " failed 'gethostname': " + std::to_string(ret));
   }
   return buffer;
+}
+
+std::string fixedSizeInt(unsigned int value, int maximal_value)
+{
+  int width = 1;
+  if (value > 0)
+    width = ceil(log10(value));
+  std::ostringstream oss;
+  oss << setfill('0') << setw(width) << value;
+  return oss.str();
 }
 
 }  // namespace rhoban_utils

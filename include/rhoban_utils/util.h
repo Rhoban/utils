@@ -52,4 +52,9 @@ void appendVector(const std::vector<T> v, std::ostream& out, const std::string& 
   out << suffix;
 }
 
+/**
+ * Format 'value' with leading zero to ensure that values up to 'maximal_value' have the same number of characters
+ */
+std::string fixedSizeInt(unsigned int value, int maximal_value);
+
 }  // namespace rhoban_utils
