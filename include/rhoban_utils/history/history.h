@@ -19,6 +19,24 @@ namespace rhoban_utils
 // weight should be between 0 (frameA) and 1 (frameB)
 Eigen::Affine3d averageFrames(Eigen::Affine3d frameA, Eigen::Affine3d frameB, double AtoB);
 
+enum InterpolatePolicy
+{
+  /**
+   * Interpolate linearly between the different values of the history
+   * - if t <= begin: return first value
+   * - if t >= end: return last value
+   * - if begin < t < end:
+   *   - Identify the two closest entries (t_0, v_0) and (t_a,v_a)
+   *   - Uses linear interpolation between the two of them
+   */
+  Linear = 0,
+  /**
+   * Uses last accessible value
+   * - if t < begin: return fallback
+   */
+  Last = 1
+};
+
 class HistoryBase
 {
 public:
@@ -41,7 +59,7 @@ public:
 /**
  * History
  *
- * Class for storing values and interpole them back in the past.
+ * Class for storing values and interpolate them back in the past.
  */
 template <typename T>
 class History : public HistoryBase
@@ -52,7 +70,8 @@ public:
   /**
    * Initialization in timestamp duration
    */
-  History(double window) : _mutex(), _windowSize(window), _values()
+  History(double window, InterpolatePolicy policy = InterpolatePolicy::Linear)
+    : _mutex(), _windowSize(window), _values(), _policy(policy)
   {
   }
 
@@ -171,7 +190,7 @@ public:
     // Lock
     _mutex.lock();
 
-    // Degererate failback cases
+    // Degenerate fallback cases
     if (_values.size() == 0)
     {
       _mutex.unlock();
@@ -180,6 +199,8 @@ public:
     else if (timestamp <= frontTimestamp())
     {
       _mutex.unlock();
+      if (_policy == InterpolatePolicy::Last)
+        return fallback();
       return front().second;
     }
     else if (timestamp >= backTimestamp())
@@ -199,6 +220,9 @@ public:
 
     // Unlock
     _mutex.unlock();
+
+    if (_policy == InterpolatePolicy::Last)
+      return valLow;
 
     // Weights
     double wLow = (tsUp - timestamp) / (tsUp - tsLow);
@@ -374,12 +398,17 @@ protected:
    * Named log sessions waiting to be written
    */
   std::map<std::string, std::unique_ptr<std::map<double, T>>> _frozenLogs;
+
+  /**
+   * How are values being interpolated
+   */
+  InterpolatePolicy _policy;
 };
 
 class HistoryDouble : public History<double>
 {
 public:
-  HistoryDouble(double window = 2.0);
+  HistoryDouble(double window = 2.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
 
   double doInterpolate(const double& valLow, double wLow, const double& valUp, double wUp) const;
   double fallback() const;
@@ -394,7 +423,7 @@ public:
 class HistoryBool : public History<bool>
 {
 public:
-  HistoryBool(double window = 2.0);
+  HistoryBool(double window = 2.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
 
   bool doInterpolate(const bool& valLow, double wLow, const bool& valUp, double wUp) const;
   bool fallback() const;
@@ -409,7 +438,7 @@ public:
 class HistoryAngle : public HistoryDouble
 {
 public:
-  HistoryAngle(double window = 2.0);
+  HistoryAngle(double window = 2.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
 
   double doInterpolate(const double& valLow, double wLow, const double& valHigh, double wHigh) const;
   HistoryBase* clone();
@@ -418,7 +447,7 @@ public:
 class HistoryPose : public History<Eigen::Affine3d>
 {
 public:
-  HistoryPose(double window = 2.0);
+  HistoryPose(double window = 2.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
 
   Eigen::Affine3d doInterpolate(const Eigen::Affine3d& valLow, double wLow, const Eigen::Affine3d& valHigh,
                                 double wHigh) const;
@@ -439,7 +468,7 @@ public:
 class HistoryVector3d : public History<Eigen::Vector3d>
 {
 public:
-  HistoryVector3d(double window = 2.0);
+  HistoryVector3d(double window = 2.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
 
   Eigen::Vector3d doInterpolate(const Eigen::Vector3d& valLow, double wLow, const Eigen::Vector3d& valHigh,
                                 double wHigh) const;

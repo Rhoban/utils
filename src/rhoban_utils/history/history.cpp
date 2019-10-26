@@ -22,7 +22,7 @@ Eigen::Affine3d averageFrames(Eigen::Affine3d frameA, Eigen::Affine3d frameB, do
   return result;
 }
 
-HistoryDouble::HistoryDouble(double window) : History(window)
+HistoryDouble::HistoryDouble(double window, InterpolatePolicy policy) : History(window, policy)
 {
 }
 
@@ -72,7 +72,7 @@ std::map<std::string, double> HistoryDouble::requestValue(double time_stamp) con
   return res;
 }
 
-HistoryBool::HistoryBool(double window) : History(window)
+HistoryBool::HistoryBool(double window, InterpolatePolicy policy) : History(window, policy)
 {
 }
 
@@ -123,7 +123,7 @@ std::map<std::string, double> HistoryBool::requestValue(double time_stamp) const
   return res;
 }
 
-HistoryAngle::HistoryAngle(double window) : HistoryDouble(window)
+HistoryAngle::HistoryAngle(double window, InterpolatePolicy policy) : HistoryDouble(window, policy)
 {
 }
 
@@ -136,7 +136,7 @@ double HistoryAngle::doInterpolate(const double& valLow, double wLow, const doub
   return deg2rad(result.getSignedValue());
 }
 
-HistoryPose::HistoryPose(double window) : History(window)
+HistoryPose::HistoryPose(double window, InterpolatePolicy policy) : History(window, policy)
 {
 }
 
@@ -210,7 +210,7 @@ std::map<std::string, double> HistoryPose::requestValue(double time_stamp) const
   return res;
 }
 
-HistoryVector3d::HistoryVector3d(double window) : History(window)
+HistoryVector3d::HistoryVector3d(double window, InterpolatePolicy policy) : History(window, policy)
 {
 }
 
