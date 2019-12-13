@@ -39,7 +39,7 @@ std::string getHostName();
 /// added (spaces are present only for readability):
 /// prefix v[0] separator v[1] ... separator v[n] suffix
 template <typename T>
-void appendVector(const std::vector<T> v, std::ostream& out, const std::string& separator = ',',
+void appendVector(const std::vector<T> v, std::ostream& out, const std::string& separator = ",",
                   const std::string& prefix = "[", const std::string& suffix = "]")
 {
   out << prefix;
