@@ -11,6 +11,13 @@ StringTable::StringTable()
 {
 }
 
+StringTable::StringTable(const std::vector<std::string>& column_names_) : column_names(column_names_)
+{
+  for (const std::string& key : column_names)
+  {
+    data[key] = Column();
+  }
+}
 StringTable::StringTable(const std::vector<std::string>& column_names_, const std::map<std::string, Column>& data_)
   : column_names(column_names_), data(data_)
 {
@@ -93,20 +100,9 @@ void StringTable::writeFile(const std::string& file_path, const std::string& sep
   {
     throw std::logic_error(DEBUG_INFO + "Failed to open file: '" + file_path + "'");
   }
-  // write header
-  appendVector(column_names, out, separator, "", "");
-  out << std::endl;
+  dumpHeader(out, separator);
+  dumpToStream(out, separator);
   // write content
-  for (size_t row = 0; row < nbRows(); row++)
-  {
-    for (size_t col = 0; col < nbCols(); col++)
-    {
-      out << getColumn(column_names[col])[row];
-      if (col < nbCols() - 1)
-        out << separator;
-    }
-    out << std::endl;
-  }
 }
 
 size_t StringTable::nbCols() const
@@ -165,6 +161,10 @@ void StringTable::insertRow(const std::map<std::string, std::string>& row)
   {
     data[entry.first].push_back(entry.second);
   }
+  if (isStreaming())
+  {
+    dumpRow(output, nbRows() - 1);
+  }
 }
 
 void StringTable::clearData()
@@ -173,6 +173,56 @@ void StringTable::clearData()
   {
     data[name].clear();
   }
+}
+
+void StringTable::startStreaming(const std::string& file_path)
+{
+  if (column_names.size() == 0)
+    throw std::logic_error("Cannot open stream without column names");
+  if (isStreaming())
+    throw std::logic_error("Stream is already opened");
+  output.open(file_path);
+  if (!output.good())
+    throw std::runtime_error("Failed to open stream at '" + file_path + "'");
+  dumpHeader(output);
+  dumpToStream(output);
+}
+
+void StringTable::endStreaming()
+{
+  if (!isStreaming())
+    throw std::logic_error("Not streaming");
+  output.close();
+}
+
+bool StringTable::isStreaming() const
+{
+  return output.is_open();
+}
+
+void StringTable::dumpHeader(std::ostream& out, const std::string& separator) const
+{
+  appendVector(column_names, out, separator, "", "");
+  out << std::endl;
+}
+
+void StringTable::dumpToStream(std::ostream& out, const std::string& separator) const
+{
+  for (size_t row = 0; row < nbRows(); row++)
+  {
+    dumpRow(out, row, separator);
+  }
+}
+
+void StringTable::dumpRow(std::ostream& out, size_t row, const std::string& separator) const
+{
+  for (size_t col = 0; col < nbCols(); col++)
+  {
+    out << getColumn(column_names[col])[row];
+    if (col < nbCols() - 1)
+      out << separator;
+  }
+  out << std::endl;
 }
 
 }  // namespace rhoban_utils

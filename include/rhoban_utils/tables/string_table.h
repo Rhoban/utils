@@ -1,6 +1,8 @@
 #pragma once
 
+#include <fstream>
 #include <map>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -13,6 +15,7 @@ public:
   typedef std::vector<std::string> Column;
 
   StringTable();
+  StringTable(const std::vector<std::string>& column_names);
   StringTable(const std::vector<std::string>& column_names, const std::map<std::string, Column>& data);
 
   /// Presence of 'separator' in column content is not supported
@@ -43,11 +46,31 @@ public:
   /// Remove all existing data from the table, column names are not modified
   void clearData();
 
+  /// Write the data to the provided file path
+  /// throws:
+  /// - logic_error if already streaming or if no columns have been provided yet
+  /// - runtime_error on failure to open the file
+  void startStreaming(const std::string& file_path);
+
+  /// Close the current stream
+  /// throws:
+  /// - logic_error if not streaming
+  void endStreaming();
+
+  bool isStreaming() const;
+
 private:
+  void dumpHeader(std::ostream& out, const std::string& separator = ",") const;
+  void dumpToStream(std::ostream& out, const std::string& separator = ",") const;
+  void dumpRow(std::ostream& out, size_t index, const std::string& separator = ",") const;
+
   std::vector<std::string> column_names;
 
   /// Stored by column_name
   std::map<std::string, Column> data;
+
+  /// The stream to which the data are written
+  std::ofstream output;
 };
 
 }  // namespace rhoban_utils
