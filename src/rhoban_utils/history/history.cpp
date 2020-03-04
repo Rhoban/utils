@@ -308,18 +308,34 @@ void HistoryCollection::loadReplays(const std::string& filePath)
       break;
     }
     size_t length = 0;
+    char type;
+    file.read(&type, 1);
+
     char buffer[256];
     file.read((char*)&length, sizeof(size_t));
     file.read(buffer, length);
     buffer[length] = '\0';
     std::string name(buffer);
 
-    // Retrieve all data for current key
-    if (!_histories.count(name))
+    if (type == HISTORY_NUMBER)
     {
-      std::ostringstream os;
-      os << "Unable to load history, unknown name \"" << name << "\"";
-      throw std::runtime_error(os.str());
+      number(name);
+    }
+    else if (type == HISTORY_ANGLE)
+    {
+      angle(name);
+    }
+    else if (type == HISTORY_BOOLEAN)
+    {
+      boolean(name);
+    }
+    else if (type == HISTORY_POSE)
+    {
+      pose(name);
+    }
+    else
+    {
+      throw std::runtime_error("Loading replay with unknown type " + type);
     }
 
     _histories[name]->loadReplay(file, 0.0);
@@ -404,6 +420,31 @@ void HistoryCollection::stopNamedLog(const std::string& filePath)
   for (auto& it : _histories)
   {
     size_t length = it.first.length();
+    char type = 0;
+
+    if (dynamic_cast<HistoryDouble*>(it.second) != nullptr)
+    {
+      type = HISTORY_NUMBER;
+    }
+    else if (dynamic_cast<HistoryAngle*>(it.second) != nullptr)
+    {
+      type = HISTORY_ANGLE;
+    }
+    else if (dynamic_cast<HistoryBool*>(it.second) != nullptr)
+    {
+      type = HISTORY_BOOLEAN;
+    }
+    else if (dynamic_cast<HistoryPose*>(it.second) != nullptr)
+    {
+      type = HISTORY_POSE;
+    }
+    else
+    {
+      throw std::runtime_error("An history in collection (" + it.first +
+                               ") has unknown type and can't be saved to log file");
+    }
+
+    file.write(&type, 1);
     file.write((const char*)(&length), sizeof(size_t));
     file.write((const char*)(it.first.c_str()), length);
     it.second->closeFrozenLog(filePath, file);

@@ -510,6 +510,12 @@ public:
     return h;
   }
 
+  // Types for binary log file header
+  static const int HISTORY_NUMBER = 0;
+  static const int HISTORY_ANGLE = 1;
+  static const int HISTORY_BOOLEAN = 2;
+  static const int HISTORY_POSE = 3;
+
   HistoryDouble* number(std::string name)
   {
     return get<HistoryDouble>(name);
