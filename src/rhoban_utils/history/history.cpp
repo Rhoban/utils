@@ -422,13 +422,13 @@ void HistoryCollection::stopNamedLog(const std::string& filePath)
     size_t length = it.first.length();
     char type = 0;
 
-    if (dynamic_cast<HistoryDouble*>(it.second) != nullptr)
-    {
-      type = HISTORY_NUMBER;
-    }
-    else if (dynamic_cast<HistoryAngle*>(it.second) != nullptr)
+    if (dynamic_cast<HistoryAngle*>(it.second) != nullptr)
     {
       type = HISTORY_ANGLE;
+    }
+    else if (dynamic_cast<HistoryDouble*>(it.second) != nullptr)
+    {
+      type = HISTORY_NUMBER;
     }
     else if (dynamic_cast<HistoryBool*>(it.second) != nullptr)
     {
