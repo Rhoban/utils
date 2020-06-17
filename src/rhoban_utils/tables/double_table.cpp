@@ -9,6 +9,9 @@ namespace rhoban_utils
 DoubleTable::DoubleTable()
 {
 }
+DoubleTable::DoubleTable(const Eigen::MatrixXd& data_) : DoubleTable(autoColNames(data_), data_)
+{
+}
 
 DoubleTable::DoubleTable(const std::vector<std::string>& column_names_, const Eigen::MatrixXd& data_)
   : column_names(column_names_), data(data_)
@@ -101,6 +104,54 @@ Eigen::VectorXd DoubleTable::getRow(size_t row) const
 double DoubleTable::getValue(const std::string& col_name, size_t row) const
 {
   return getColumn(col_name)(row);
+}
+const Eigen::MatrixXd& DoubleTable::getData() const
+{
+  return data;
+}
+
+void DoubleTable::writeFile(const std::string& file_path, const std::string& separator) const
+{
+  std::ofstream out(file_path);
+  if (out.bad())
+  {
+    throw std::logic_error(DEBUG_INFO + "Failed to open file: '" + file_path + "'");
+  }
+  dumpHeader(out, separator);
+  dumpToStream(out, separator);
+}
+
+void DoubleTable::dumpHeader(std::ostream& out, const std::string& separator) const
+{
+  appendVector(column_names, out, separator, "", "");
+  out << std::endl;
+}
+
+void DoubleTable::dumpToStream(std::ostream& out, const std::string& separator) const
+{
+  for (size_t row = 0; row < nbRows(); row++)
+  {
+    dumpRow(out, row, separator);
+  }
+}
+
+void DoubleTable::dumpRow(std::ostream& out, size_t row, const std::string& separator) const
+{
+  for (size_t col = 0; col < nbCols(); col++)
+  {
+    out << getColumn(column_names[col])[row];
+    if (col < nbCols() - 1)
+      out << separator;
+  }
+  out << std::endl;
+}
+
+std::vector<std::string> DoubleTable::autoColNames(const Eigen::MatrixXd& data)
+{
+  std::vector<std::string> result;
+  for (int c = 0; c < data.cols(); c++)
+    result.push_back("col" + std::to_string(c + 1));
+  return result;
 }
 
 }  // namespace rhoban_utils
