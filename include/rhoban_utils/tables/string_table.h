@@ -46,6 +46,9 @@ public:
   /// Remove all existing data from the table, column names are not modified
   void clearData();
 
+  /// Dump current content of the table to the provided path
+  void dump(const std::string& file_path);
+
   /// Write the data to the provided file path
   /// throws:
   /// - logic_error if already streaming or if no columns have been provided yet

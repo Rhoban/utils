@@ -175,6 +175,12 @@ void StringTable::clearData()
   }
 }
 
+void StringTable::dump(const std::string& file_path)
+{
+  startStreaming(file_path);
+  endStreaming();
+}
+
 void StringTable::startStreaming(const std::string& file_path)
 {
   if (column_names.size() == 0)
