@@ -15,6 +15,8 @@ class DoubleTable
 {
 public:
   DoubleTable();
+  /// Name of columns are attributed automatically
+  DoubleTable(const Eigen::MatrixXd& data);
   DoubleTable(const std::vector<std::string>& column_names, const Eigen::MatrixXd& data);
 
   /// Presence of 'separator' in column content is not supported
@@ -37,7 +39,11 @@ public:
   /// Return a map with column_name as key and content as value
   Eigen::VectorXd getRow(size_t row) const;
 
+  const Eigen::MatrixXd& getData() const;
+
   double getValue(const std::string& col_name, size_t row) const;
+
+  void writeFile(const std::string& file_path, const std::string& separator = ",") const;
 
 private:
   std::vector<std::string> column_names;
@@ -47,6 +53,11 @@ private:
 
   /// The content of the table
   Eigen::MatrixXd data;
+
+  static std::vector<std::string> autoColNames(const Eigen::MatrixXd& data);
+  void dumpHeader(std::ostream& out, const std::string& separator = ",") const;
+  void dumpToStream(std::ostream& out, const std::string& separator = ",") const;
+  void dumpRow(std::ostream& out, size_t index, const std::string& separator = ",") const;
 };
 
 }  // namespace rhoban_utils

@@ -89,6 +89,34 @@ public:
     return build(std::string(class_name));
   }
 
+  /// Look for a path in 'v', path can either be 'abs path' or 'rel path', one and only one
+  /// should be provided
+  static std::string readFilePath(const Json::Value& v, const std::string& dir_path)
+  {
+    std::string abs_path, rel_path;
+    rhoban_utils::tryRead(v, "abs path", &abs_path);
+    rhoban_utils::tryRead(v, "rel path", &rel_path);
+    if (abs_path != "" && rel_path != "")
+      throw JsonParsingError(DEBUG_INFO + " both 'abs path' and 'rel path' have been provided");
+    else if (abs_path == "" && rel_path == "")
+      throw JsonParsingError(DEBUG_INFO + " none of 'abs path' and 'rel path' have been provided");
+    else if (abs_path != "")
+      return abs_path;
+    else
+      return dir_path + rel_path;
+  }
+
+  /// Similar to readFilePath except it does nothing if neither 'abs path' nor 'rel path' is provided
+  static void tryReadFilePath(const Json::Value& v, const std::string& dir_path, std::string* file_path)
+  {
+    if (v.isNull())
+      throw JsonParsingError(DEBUG_INFO + "Trying to build from a NULL value");
+    if (!v.isObject())
+      throw JsonParsingError(DEBUG_INFO + "Trying to build from a non-object value");
+    if (v.isMember("abs path") || v.isMember("rel path"))
+      *file_path = readFilePath(v, dir_path);
+  }
+
   /// When building from a node, the expected format of the json is the following:
   /// - String initialization
   ///   - "class name" : <object type> ,
@@ -109,25 +137,10 @@ public:
       throw JsonParsingError("Factory::build: Trying to build from a non-object value");
     }
     // Trying the three possible ways to read the document
-    std::string abs_path, rel_path, class_name;
-    rhoban_utils::tryRead(v, "abs path", &abs_path);
-    rhoban_utils::tryRead(v, "rel path", &rel_path);
+    std::string file_path, class_name;
+    tryReadFilePath(v, dir_path, &file_path);
     rhoban_utils::tryRead(v, "class name", &class_name);
     // Treating cases where multiple or no methods have been provided
-    std::string file_path;
-    if (abs_path != "" && rel_path != "")
-    {
-      throw JsonParsingError("Factory::build: two paths provided for initialization");
-    }
-    else if (abs_path != "")
-    {
-      file_path = abs_path;
-    }
-    else if (rel_path != "")
-    {
-      file_path = dir_path + rel_path;
-    }
-    //
     if (class_name != "" && file_path != "")
     {
       throw JsonParsingError("Factory::build: 'path' and 'class name' are incompatible");
@@ -334,6 +347,25 @@ public:
     return bytes_read;
   }
 
+  /// Read a path in the Json::Value (see readFilePath) and build an object from the binary reading
+  /// at the given path
+  std::unique_ptr<T> loadBinaryFromPath(const Json::Value& v, const std::string& dir_name)
+  {
+    std::string file_path = readFilePath(v, dir_name);
+    std::unique_ptr<T> result;
+    loadFromFile(file_path, result);
+    return std::move(result);
+  }
+
+  /// If a path is properly provided, build an object and place it in 'result'
+  /// If no path is provided, value of 'result' is not changed
+  void tryLoadBinaryFromPath(const Json::Value& v, const std::string& dir_name, std::unique_ptr<T>* result)
+  {
+    std::string file_path;
+    tryReadFilePath(v, dir_name, &file_path);
+    if (file_path != "")
+      loadFromFile(file_path, *result);
+  }
   /// Convert an empty builder to a Json builder
   static JsonBuilder toJsonBuilder(Builder builder, bool parse_json)
   {
