@@ -201,19 +201,15 @@ TEST(history, pose_interpolate)
 {
   HistoryPose h;
 
-  Eigen::Quaterniond rotation =
-    Eigen::AngleAxisd(2, Eigen::Vector3d::UnitX()) *
-    Eigen::AngleAxisd(1.2, Eigen::Vector3d::UnitY()) *
-    Eigen::AngleAxisd(0.5, Eigen::Vector3d::UnitZ());
+  Eigen::Quaterniond rotation = Eigen::AngleAxisd(2, Eigen::Vector3d::UnitX()) *
+                                Eigen::AngleAxisd(1.2, Eigen::Vector3d::UnitY()) *
+                                Eigen::AngleAxisd(0.5, Eigen::Vector3d::UnitZ());
 
   Eigen::Affine3d pose = Eigen::Affine3d::Identity();
   h.pushValue(0, pose);
 
-  pose.fromPositionOrientationScale(
-    Eigen::Vector3d(1, 4, 5.2),
-    Eigen::AngleAxisd(1, Eigen::Vector3d::UnitY()),
-    Eigen::Vector3d(1, 1, 1)
-  );
+  pose.fromPositionOrientationScale(Eigen::Vector3d(1, 4, 5.2), Eigen::AngleAxisd(1, Eigen::Vector3d::UnitY()),
+                                    Eigen::Vector3d(1, 1, 1));
   h.pushValue(2, pose);
 
   Eigen::Affine3d interpolated = h.interpolate(1);
@@ -238,11 +234,8 @@ TEST(history, pose_binary)
   HistoryPose h1;
 
   Eigen::Affine3d pose;
-  pose.fromPositionOrientationScale(
-    Eigen::Vector3d(1, 2, 3),
-    Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()),
-    Eigen::Vector3d(1, 1, 1)
-  );
+  pose.fromPositionOrientationScale(Eigen::Vector3d(1, 2, 3), Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()),
+                                    Eigen::Vector3d(1, 1, 1));
 
   h1.startNamedLog("test");
   h1.pushValue(0., pose);
@@ -298,9 +291,6 @@ TEST(history, collection_log)
   EXPECT_DOUBLE_EQ(-1.9495462246455295, collection2.angle("b")->interpolate(3.5));
   EXPECT_DOUBLE_EQ(-1.4247779607693793, collection2.angle("b")->interpolate(4.));
   EXPECT_DOUBLE_EQ(-0.90000969689322929, collection2.angle("b")->interpolate(4.5));
-
-  HistoryCollection collection3;
-  ASSERT_THROW(collection3.loadReplays("/tmp/test"), std::runtime_error);
 }
 
 TEST(history, collection_smaller_ts)
@@ -318,11 +308,10 @@ TEST(history, collection_smaller_ts)
   collection.number("c");
 
   EXPECT_FLOAT_EQ(collection.smallestTimestamp(), 1.27);
-
 }
 
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
-}  
+}
