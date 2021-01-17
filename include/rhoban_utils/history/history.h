@@ -553,7 +553,7 @@ public:
   /**
    *  Load the replays from a given file stream
    */
-  void loadReplays(const std::string& filePath);
+  void loadReplays(const std::string& filePath, bool oldFormat = false);
 
   /**
    * Find the smallest and the biggest timestamp

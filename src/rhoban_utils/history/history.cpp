@@ -286,7 +286,7 @@ HistoryCollection::~HistoryCollection()
   }
 }
 
-void HistoryCollection::loadReplays(const std::string& filePath)
+void HistoryCollection::loadReplays(const std::string& filePath, bool oldFormat)
 {
   clear();
 
@@ -309,7 +309,10 @@ void HistoryCollection::loadReplays(const std::string& filePath)
     }
     size_t length = 0;
     char type;
-    file.read(&type, 1);
+    if (!oldFormat)
+    {
+      file.read(&type, 1);
+    }
 
     char buffer[256];
     file.read((char*)&length, sizeof(size_t));
@@ -317,25 +320,35 @@ void HistoryCollection::loadReplays(const std::string& filePath)
     buffer[length] = '\0';
     std::string name(buffer);
 
-    if (type == HISTORY_NUMBER)
+    if (oldFormat)
     {
-      number(name);
-    }
-    else if (type == HISTORY_ANGLE)
-    {
-      angle(name);
-    }
-    else if (type == HISTORY_BOOLEAN)
-    {
-      boolean(name);
-    }
-    else if (type == HISTORY_POSE)
-    {
-      pose(name);
+      if (!_histories.count(name))
+      {
+        throw std::runtime_error("Entry was not declared in (old-style) history: " + type);
+      }
     }
     else
     {
-      throw std::runtime_error("Loading replay with unknown type " + type);
+      if (type == HISTORY_NUMBER)
+      {
+        number(name);
+      }
+      else if (type == HISTORY_ANGLE)
+      {
+        angle(name);
+      }
+      else if (type == HISTORY_BOOLEAN)
+      {
+        boolean(name);
+      }
+      else if (type == HISTORY_POSE)
+      {
+        pose(name);
+      }
+      else
+      {
+        throw std::runtime_error("Loading replay with unknown type " + type);
+      }
     }
 
     _histories[name]->loadReplay(file, 0.0);
