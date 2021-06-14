@@ -1,20 +1,8 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.16.3)
 project(rhoban_utils)
 
-find_package(catkin REQUIRED COMPONENTS
-  jsoncpp
-  eigen
-)
-
+find_package(Eigen3 REQUIRED)
 find_package(Threads REQUIRED)
-
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES rhoban_utils
-  CATKIN_DEPENDS jsoncpp eigen
-)
-
-include_directories(include ${catkin_INCLUDE_DIRS})
 
 option(RHOBAN_UTILS_BUILD_EXAMPLES "Building examples" OFF)
 
@@ -52,17 +40,20 @@ foreach (DIRECTORY ${SOURCES_DIRECTORIES})
 endforeach (DIRECTORY)
 
 
-add_library (rhoban_utils ${ALL_SOURCES})
-target_link_libraries(rhoban_utils ${catkin_LIBRARIES} Threads::Threads)
+add_library(rhoban_utils SHARED  ${ALL_SOURCES})
+target_link_libraries(rhoban_utils Eigen3::Eigen jsoncpp_lib Threads::Threads)
+target_include_directories(rhoban_utils PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
 
 if (RHOBAN_UTILS_BUILD_EXAMPLES)
   add_executable(json_serialization_example examples/json_serialization.cpp)
-  target_link_libraries(json_serialization_example rhoban_utils ${catkin_LIBRARIES} Threads::Threads)
+  target_link_libraries(json_serialization_example rhoban_utils Threads::Threads)
   add_executable(json_factory_example examples/json_factory.cpp)
-  target_link_libraries(json_factory_example rhoban_utils ${catkin_LIBRARIES} Threads::Threads)
+  target_link_libraries(json_factory_example rhoban_utils Threads::Threads)
 endif()
 
-enable_testing()
+include(CTest)
  
 set(TESTS
   angle
@@ -92,12 +83,14 @@ set(TESTS
   util
 )
 
-if (CATKIN_ENABLE_TESTING)
+if (BUILD_TESTING)
+  find_package(GTest REQUIRED)
   # create an executable for each test
   foreach(test ${TESTS})
     string(REPLACE "/" "_" id ${test})
-    catkin_add_gtest(${id} tests/${test}.cpp)
-    target_link_libraries(${id} rhoban_utils)
+    add_executable(${id} ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}.cpp)
+    target_link_libraries(${id} PRIVATE rhoban_utils gtest)
+    gtest_discover_tests(${id})
   endforeach(test)
 endif()
 
