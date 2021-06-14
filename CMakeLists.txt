@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 project(rhoban_utils)
 
 find_package (Eigen3 3 REQUIRED NO_MODULE)
-find_package (jsoncpp)
+find_package (jsoncpp REQUIRED)
 find_package(Threads REQUIRED)
 
 option(RHOBAN_UTILS_BUILD_EXAMPLES "Building examples" OFF)
@@ -30,8 +30,8 @@ set(SOURCES_DIRECTORIES
 )
 
 set (EXTRA_LIBRARIES
-    Eigen3
-    jsoncpp
+    Eigen3::Eigen
+    jsoncpp_lib
 )
 
 #Include Sources sub sources
@@ -46,6 +46,7 @@ foreach (DIRECTORY ${SOURCES_DIRECTORIES})
 endforeach (DIRECTORY)
 
 add_library (rhoban_utils ${ALL_SOURCES})
+target_include_directories(rhoban_utils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_link_libraries(rhoban_utils ${EXTRA_LIBRARIES} Threads::Threads)
 
 if (RHOBAN_UTILS_BUILD_EXAMPLES)
