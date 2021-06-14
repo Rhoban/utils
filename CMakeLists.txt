@@ -1,20 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(rhoban_utils)
 
-find_package(catkin REQUIRED COMPONENTS
-  jsoncpp
-  eigen
-)
-
+find_package (Eigen3 3 REQUIRED NO_MODULE)
+find_package (jsoncpp)
 find_package(Threads REQUIRED)
-
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES rhoban_utils
-  CATKIN_DEPENDS jsoncpp eigen
-)
-
-include_directories(include ${catkin_INCLUDE_DIRS})
 
 option(RHOBAN_UTILS_BUILD_EXAMPLES "Building examples" OFF)
 
@@ -40,6 +29,11 @@ set(SOURCES_DIRECTORIES
   src/rhoban_utils/stats
 )
 
+set (EXTRA_LIBRARIES
+    Eigen3
+    jsoncpp
+)
+
 #Include Sources sub sources
 foreach (DIRECTORY ${SOURCES_DIRECTORIES})
     message(STATUS "-- Sources: Adding ${DIRECTORY}/")
@@ -51,15 +45,14 @@ foreach (DIRECTORY ${SOURCES_DIRECTORIES})
     set (ALL_SOURCES ${ALL_SOURCES} ${PREFIXED_SOURCES})
 endforeach (DIRECTORY)
 
-
 add_library (rhoban_utils ${ALL_SOURCES})
-target_link_libraries(rhoban_utils ${catkin_LIBRARIES} Threads::Threads)
+target_link_libraries(rhoban_utils ${EXTRA_LIBRARIES} Threads::Threads)
 
 if (RHOBAN_UTILS_BUILD_EXAMPLES)
   add_executable(json_serialization_example examples/json_serialization.cpp)
-  target_link_libraries(json_serialization_example rhoban_utils ${catkin_LIBRARIES} Threads::Threads)
+  target_link_libraries(json_serialization_example rhoban_utils ${EXTRA_LIBRARIES} Threads::Threads)
   add_executable(json_factory_example examples/json_factory.cpp)
-  target_link_libraries(json_factory_example rhoban_utils ${catkin_LIBRARIES} Threads::Threads)
+  target_link_libraries(json_factory_example rhoban_utils ${EXTRA_LIBRARIES} Threads::Threads)
 endif()
 
 enable_testing()
