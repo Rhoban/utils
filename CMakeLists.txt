@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.16.3)
 project(rhoban_utils)
-
 find_package(Eigen3 REQUIRED)
 find_package(Threads REQUIRED)
 
@@ -53,7 +52,6 @@ if (RHOBAN_UTILS_BUILD_EXAMPLES)
   target_link_libraries(json_factory_example rhoban_utils Threads::Threads)
 endif()
 
-include(CTest)
  
 set(TESTS
   angle
@@ -83,14 +81,19 @@ set(TESTS
   util
 )
 
+include(CTest)
 if (BUILD_TESTING)
   find_package(GTest REQUIRED)
+  include_directories(${GTEST_INCLUDE_DIRS})
   # create an executable for each test
   foreach(test ${TESTS})
     string(REPLACE "/" "_" id ${test})
     add_executable(${id} ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}.cpp)
-    target_link_libraries(${id} PRIVATE rhoban_utils gtest)
-    gtest_discover_tests(${id})
+    add_test(NAME ${id} COMMAND ${id})
+    target_link_libraries(${id} PRIVATE rhoban_utils GTest::GTest)
+    set_target_properties(${id} PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tests"
+    )
   endforeach(test)
 endif()
 
