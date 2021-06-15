@@ -83,6 +83,10 @@ set(TESTS
 
 include(CTest)
 if (BUILD_TESTING)
+  if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/tests)
+  endif()
+
   find_package(GTest REQUIRED)
   include_directories(${GTEST_INCLUDE_DIRS})
   # create an executable for each test
@@ -96,4 +100,3 @@ if (BUILD_TESTING)
     )
   endforeach(test)
 endif()
-
