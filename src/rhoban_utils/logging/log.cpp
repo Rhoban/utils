@@ -11,7 +11,6 @@ using namespace std::chrono;
 
 namespace rhoban_utils
 {
-
 static uint64_t getTS(uint64_t h, uint64_t m, uint64_t s, uint64_t ms, uint64_t offset)
 {
   return 1000 * (ms + 1000 * (s + 60 * (m + 60 * h))) + offset;
@@ -31,7 +30,7 @@ void Log::load(const std::string& filename, uint64_t log_expected_start_ms)
   time_point<system_clock> log_start = time_point<system_clock>(milliseconds(log_expected_start_ms));
   uint64_t nb_days = duration_cast<hours>(log_start.time_since_epoch()).count() / 24;
   uint64_t offset = nb_days * 3600 * 24 * 1000;
-  
+
   entries.clear();
   std::string data = file2string(filename);
   std::vector<std::string> lines;
@@ -50,13 +49,13 @@ void Log::load(const std::string& filename, uint64_t log_expected_start_ms)
       uint64_t ms = std::stoi(cm[5].str());
 
       uint64_t ts = getTS(hour, min, sec, ms, offset);
-      //TODO: cover the case where the hours change (ts strongly lower than last_ts)
+      // TODO: cover the case where the hours change (ts strongly lower than last_ts)
       entries[ts].push_back(cm[0]);
       last_ts = ts;
     }
     else if (entries.size() > 0)
     {
-      // No 
+      // No
       entries[last_ts].push_back(line);
     }
   }
@@ -67,4 +66,4 @@ Log::MessageMap Log::entriesBetween(uint64_t start, uint64_t end)
   return MessageMap(entries.lower_bound(start), entries.lower_bound(end));
 }
 
-}
+}  // namespace rhoban_utils
