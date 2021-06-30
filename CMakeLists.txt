@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.16.3)
 project(rhoban_utils)
-find_package(Eigen3 REQUIRED)
 find_package(Threads REQUIRED)
 
 option(RHOBAN_UTILS_BUILD_EXAMPLES "Building examples" OFF)
