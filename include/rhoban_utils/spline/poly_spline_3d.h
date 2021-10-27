@@ -25,6 +25,11 @@ public:
   void clear();
 
   /**
+   * Spline duration
+   */
+  double duration() const;
+
+  /**
    * Return the spline interpolation
    * for given x position
    */

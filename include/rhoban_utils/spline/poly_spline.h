@@ -24,6 +24,11 @@ public:
   typedef std::vector<Point> Points;
 
   /**
+   * Spline duration
+   */
+  double duration() const;
+
+  /**
    * Add a point with its x position, y value and
    * its derivative slope
    */

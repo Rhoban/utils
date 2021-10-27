@@ -23,6 +23,11 @@ void PolySpline::clear()
   _splines.clear();
 }
 
+double PolySpline::duration() const
+{
+  return _splines[_splines.size() - 1].max - _splines[0].min;
+}
+
 /**
  * Return the spline interpolation
  * for given x position
