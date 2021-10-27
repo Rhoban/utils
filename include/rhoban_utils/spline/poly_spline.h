@@ -8,7 +8,8 @@ namespace rhoban_utils
 /**
  * PolySpline
  *
- * Quintic splines (can be used as cubic or linear as well)
+ * Splines primitive based on third order polynoms
+ * for smooth and differentiablie adjunction
  */
 class PolySpline
 {
@@ -18,7 +19,6 @@ public:
     double position;
     double value;
     double delta;
-    double ddelta;
   };
 
   typedef std::vector<Point> Points;
@@ -27,7 +27,7 @@ public:
    * Add a point with its x position, y value and
    * its derivative slope
    */
-  void addPoint(double pos, double val, double delta=0., double ddelta = 0.);
+  void addPoint(double pos, double val, double delta);
 
   void clear();
 
@@ -68,8 +68,6 @@ private:
     double b;
     double c;
     double d;
-    double e;
-    double f;
   };
 
   struct Spline
@@ -106,7 +104,7 @@ private:
    * Fit a polynom between 0 and 1 with
    * given value and slope
    */
-  static Polynom polynomFit(double f0, double fd0, double fdd0, double f1, double fd1, double fdd1);
+  static Polynom polynomFit(double val1, double delta1, double val2, double delta2);
 
   /**
    * Recompute splines interpolation model

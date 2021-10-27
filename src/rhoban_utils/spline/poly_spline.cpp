@@ -6,9 +6,9 @@
 
 namespace rhoban_utils
 {
-void PolySpline::addPoint(double pos, double val, double delta, double ddelta)
+void PolySpline::addPoint(double pos, double val, double delta)
 {
-  struct Point point = { pos, val, delta, ddelta };
+  struct Point point = { pos, val, delta };
   if (_points.size() > 0 && pos <= _points.back().position)
   {
     throw std::runtime_error("Trying to add a point in a cublic spline before a previous one");
@@ -94,25 +94,21 @@ const PolySpline::Points& PolySpline::points() const
 
 double PolySpline::polynomValue(double t, const Polynom& p)
 {
-  return p.f + t * (t * (t * (t * (t * p.a + p.b) + p.c) + p.d) + p.e);
+  return p.d + t * (t * (p.a * t + p.b) + p.c);
 }
 
 double PolySpline::polynomDiff(double t, const Polynom& p)
 {
-  return t * (t * (t * (t * 5 * p.a + 4 * p.b) + 3 * p.c) + 2 * p.d) + p.e;
+  return t * (3 * p.a * t + 2 * p.b) + p.c;
 }
 
-PolySpline::Polynom PolySpline::polynomFit(double f0, double fd0, double fdd0, double f1, double fd1, double fdd1)
+PolySpline::Polynom PolySpline::polynomFit(double val1, double delta1, double val2, double delta2)
 {
-  struct PolySpline::Polynom polynom = { -6 * f0 + 6 * f1 - 3 * fd0 - 3 * fd1 - fdd0 / 2 + fdd1 / 2,
-                                         15 * f0 - 15 * f1 + 8 * fd0 + 7 * fd1 + 3 * fdd0 / 2 - fdd1,
-                                         -10 * f0 + 10 * f1 - 6 * fd0 - 4 * fd1 - 3 * fdd0 / 2 + fdd1 / 2,
-                                         fdd0 / 2,
-                                         fd0,
-                                         f0 };
+  struct PolySpline::Polynom polynom = { 2.0 * val1 + delta1 + delta2 - 2.0 * val2,
+                                         3.0 * val2 - 2.0 * delta1 - 3.0 * val1 - delta2, delta1, val1 };
 
   return polynom;
-}  // namespace rhoban_utils
+}
 
 /**
  * Return the spline interpolation value
@@ -155,8 +151,7 @@ void PolySpline::computeSplines()
     {
       continue;
     }
-    struct Spline spline = { polynomFit(_points[i - 1].value, _points[i - 1].delta, _points[i - 1].ddelta,
-                                        _points[i].value, _points[i].delta, _points[i].ddelta),
+    struct Spline spline = { polynomFit(_points[i - 1].value, _points[i - 1].delta, _points[i].value, _points[i].delta),
                              _points[i - 1].position, _points[i].position };
 
     _splines.push_back(spline);
