@@ -20,7 +20,8 @@ public:
    * Add a point with its x position, y value and
    * its derivative slope
    */
-  void addPoint(double pos, Eigen::Vector3d val, Eigen::Vector3d delta);
+  void addPoint(double pos, Eigen::Vector3d val, Eigen::Vector3d delta = Eigen::Vector3d(0, 0, 0),
+                Eigen::Vector3d ddelta = Eigen::Vector3d(0, 0, 0));
 
   void clear();
 

@@ -13,11 +13,11 @@ void PolySpline3D::clear()
   zSpline.clear();
 }
 
-void PolySpline3D::addPoint(double pos, Eigen::Vector3d val, Eigen::Vector3d delta)
+void PolySpline3D::addPoint(double pos, Eigen::Vector3d val, Eigen::Vector3d delta, Eigen::Vector3d ddelta)
 {
-  xSpline.addPoint(pos, val[0], delta[0]);
-  ySpline.addPoint(pos, val[1], delta[1]);
-  zSpline.addPoint(pos, val[2], delta[2]);
+  xSpline.addPoint(pos, val[0], delta[0], ddelta[0]);
+  ySpline.addPoint(pos, val[1], delta[1], ddelta[1]);
+  zSpline.addPoint(pos, val[2], delta[2], ddelta[2]);
 }
 
 Eigen::Vector3d PolySpline3D::get(double x) const
