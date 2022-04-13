@@ -1,4 +1,4 @@
 
 deps:
-  - rhobandeps/eigen#wks
+  - rhobandeps/eigen
   - rhobandeps/jsoncpp#cmake_only
