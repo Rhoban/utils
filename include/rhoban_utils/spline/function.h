@@ -40,6 +40,7 @@ public:
    * Load a JSON file
    */
   static std::map<std::string, Function> fromFile(std::string filename);
+  static std::map<std::string, Function> fromFile(std::string filename, Json::Value& json);
 
   /**
    * Write a JSON file

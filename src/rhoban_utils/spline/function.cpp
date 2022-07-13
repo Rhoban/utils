@@ -24,9 +24,14 @@ void Function::clear()
 
 std::map<std::string, Function> Function::fromFile(std::string filename)
 {
+  Json::Value json;
+  fromFile(filename, json);
+}
+
+std::map<std::string, Function> Function::fromFile(std::string filename, Json::Value& json)
+{
   // Reading json content
   std::map<std::string, Function> result;
-  Json::Value json;
   json = rhoban_utils::file2Json(filename);
   // Interpreting Json object
   if (json.isObject())
