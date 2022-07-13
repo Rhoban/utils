@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <json/json.h>
 
 namespace rhoban_utils
 {
