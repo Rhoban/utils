@@ -25,7 +25,7 @@ void Function::clear()
 std::map<std::string, Function> Function::fromFile(std::string filename)
 {
   Json::Value json;
-  fromFile(filename, json);
+  return fromFile(filename, json);
 }
 
 std::map<std::string, Function> Function::fromFile(std::string filename, Json::Value& json)
