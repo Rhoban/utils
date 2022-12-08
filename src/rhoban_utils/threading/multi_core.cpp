@@ -1,6 +1,7 @@
 #include "rhoban_utils/threading/multi_core.h"
 
 #include <thread>
+#include <stdexcept>
 
 namespace rhoban_utils
 {
