@@ -109,7 +109,7 @@ private:
    * Fit a polynom between 0 and 1 with
    * given value and slope
    */
-  static Polynom polynomFit(double val1, double delta1, double val2, double delta2);
+  static Polynom polynomFit(double t1, double val1, double delta1, double t2, double val2, double delta2);
 
   /**
    * Recompute splines interpolation model

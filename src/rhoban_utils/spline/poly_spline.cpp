@@ -2,6 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <Eigen/Dense>
 #include "rhoban_utils/spline/poly_spline.h"
 
 namespace rhoban_utils
@@ -64,14 +65,13 @@ double PolySpline::interpolation(double x, PolySpline::ValueType type) const
     {
       if (x >= _splines[i].min && x <= _splines[i].max)
       {
-        double xi = (x - _splines[i].min) / (_splines[i].max - _splines[i].min);
         if (type == Value)
         {
-          return polynomValue(xi, _splines[i].poly);
+          return polynomValue(x, _splines[i].poly);
         }
         else if (type == Speed)
         {
-          return polynomDiff(xi, _splines[i].poly);
+          return polynomDiff(x, _splines[i].poly);
         }
       }
     }
@@ -107,10 +107,26 @@ double PolySpline::polynomDiff(double t, const Polynom& p)
   return t * (3 * p.a * t + 2 * p.b) + p.c;
 }
 
-PolySpline::Polynom PolySpline::polynomFit(double val1, double delta1, double val2, double delta2)
+PolySpline::Polynom PolySpline::polynomFit(double t1, double val1, double delta1, double t2, double val2, double delta2)
 {
-  struct PolySpline::Polynom polynom = { 2.0 * val1 + delta1 + delta2 - 2.0 * val2,
-                                         3.0 * val2 - 2.0 * delta1 - 3.0 * val1 - delta2, delta1, val1 };
+  Eigen::Matrix4d M;
+  double t1_2 = t1 * t1;
+  double t1_3 = t1_2 * t1;
+  double t2_2 = t2 * t2;
+  double t2_3 = t2_2 * t2;
+
+  M << t1_3, t1_2, t1, 1,      //
+      3 * t1_2, 2 * t1, 1, 0,  //
+      t2_3, t2_2, t2, 1,       //
+      3 * t2_2, 2 * t2, 1, 0   //
+      ;
+
+  Eigen::Vector4d v;
+  v << val1, delta1, val2, delta2;
+
+  Eigen::Vector4d abcd = M.inverse() * v;
+
+  struct PolySpline::Polynom polynom = { abcd[0], abcd[1], abcd[2], abcd[3] };
 
   return polynom;
 }
@@ -156,7 +172,8 @@ void PolySpline::computeSplines()
     {
       continue;
     }
-    struct Spline spline = { polynomFit(_points[i - 1].value, _points[i - 1].delta, _points[i].value, _points[i].delta),
+    struct Spline spline = { polynomFit(_points[i - 1].position, _points[i - 1].value, _points[i - 1].delta,
+                                        _points[i].position, _points[i].value, _points[i].delta),
                              _points[i - 1].position, _points[i].position };
 
     _splines.push_back(spline);
