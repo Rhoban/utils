@@ -25,7 +25,6 @@ set(SOURCES_DIRECTORIES
   src/rhoban_utils/tables
   src/rhoban_utils/threading
   src/rhoban_utils/timing
-  src/rhoban_utils/stats
 )
 
 set (EXTRA_LIBRARIES
@@ -55,7 +54,6 @@ if (RHOBAN_UTILS_BUILD_EXAMPLES)
   target_link_libraries(json_factory_example rhoban_utils ${EXTRA_LIBRARIES} Threads::Threads)
 endif()
 
-enable_testing()
  
 set(TESTS
   angle
@@ -85,12 +83,22 @@ set(TESTS
   util
 )
 
-if (CATKIN_ENABLE_TESTING)
+include(CTest)
+if (BUILD_TESTING)
+  if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/tests)
+  endif()
+
+  find_package(GTest REQUIRED)
+  include_directories(${GTEST_INCLUDE_DIRS})
   # create an executable for each test
   foreach(test ${TESTS})
     string(REPLACE "/" "_" id ${test})
-    catkin_add_gtest(${id} tests/${test}.cpp)
-    target_link_libraries(${id} rhoban_utils)
+    add_executable(${id} ${CMAKE_CURRENT_SOURCE_DIR}/tests/${test}.cpp)
+    add_test(NAME ${id} COMMAND ${id})
+    target_link_libraries(${id} PRIVATE rhoban_utils GTest::GTest)
+    set_target_properties(${id} PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tests"
+    )
   endforeach(test)
 endif()
-

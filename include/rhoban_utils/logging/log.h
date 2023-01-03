@@ -6,7 +6,6 @@
 
 namespace rhoban_utils
 {
-
 /**
  * Represents a log written by rhoban_utils::Logger as a mapping between entries and time
  */
@@ -14,7 +13,7 @@ class Log
 {
 public:
   typedef std::map<uint64_t, std::vector<std::string>> MessageMap;
-  
+
   Log();
   /**
    * If log_expected_start is provided, then uses it to determine the day the log has started
@@ -34,4 +33,4 @@ protected:
   MessageMap entries;
 };
 
-}
+}  // namespace rhoban_utils

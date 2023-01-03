@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <thread>
+#include <stdexcept>
 
 namespace rhoban_utils
 {

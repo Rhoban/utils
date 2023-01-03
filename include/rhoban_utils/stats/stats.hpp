@@ -1,9 +1,12 @@
+#pragma once
+
 #include <cmath>
-#include <rhoban_utils/stats/stats.h>
+#include <vector>
 
 namespace rhoban_utils
 {
-double average(const std::vector<double>& values)
+template <typename T>
+double average(const T& values)
 {
   if (values.size())
   {
@@ -22,7 +25,8 @@ double average(const std::vector<double>& values)
   }
 }
 
-double variance(const std::vector<double>& values, double* avg_)
+template <typename T>
+double variance(const T& values, double* avg_ = nullptr)
 {
   double avg = average(values);
 
@@ -48,8 +52,10 @@ double variance(const std::vector<double>& values, double* avg_)
   }
 }
 
-double standardDeviation(const std::vector<double>& values, double* avg)
+template <typename T>
+double standardDeviation(const T& values, double* avg = nullptr)
 {
   return sqrt(variance(values, avg));
 }
+
 }  // namespace rhoban_utils
