@@ -40,26 +40,26 @@ public:
    * Return the spline interpolation
    * for given x position
    */
-  double get(double x) const;
+  double get(double x);
 
   /**
    * Returns the spline speed interpolation
    * for given x position
    */
-  double getVel(double x) const;
+  double getVel(double x);
 
   enum ValueType
   {
     Value,
     Speed
   };
-  double interpolation(double x, ValueType type) const;
+  double interpolation(double x, ValueType type);
 
   /**
    * Return the spline interpolation value
    * with x bound between 0 and 1
    */
-  double getMod(double x) const;
+  double getMod(double x);
 
   /**
    * Access to internal Points container
@@ -67,6 +67,8 @@ public:
   const Points& points() const;
 
 private:
+  bool dirty = true;
+
   struct Polynom
   {
     double a;
