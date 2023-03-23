@@ -1,9 +1,9 @@
+#include "rhoban_utils/spline/poly_spline.h"
+#include <Eigen/Dense>
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <vector>
-#include <cmath>
-#include <algorithm>
-#include <Eigen/Dense>
-#include "rhoban_utils/spline/poly_spline.h"
 
 namespace rhoban_utils
 {
@@ -22,7 +22,7 @@ void PolySpline::addPoint(double pos, double val, double delta, bool angle_splin
   }
 
   _points.push_back(point);
-  computeSplines();
+  dirty = true;
 }
 
 void PolySpline::clear()
@@ -40,8 +40,14 @@ double PolySpline::duration() const
  * Return the spline interpolation
  * for given x position
  */
-double PolySpline::interpolation(double x, PolySpline::ValueType type) const
+double PolySpline::interpolation(double x, PolySpline::ValueType type)
 {
+  if (dirty)
+  {
+    computeSplines();
+    dirty = false;
+  }
+
   if (_points.size() == 0)
   {
     return 0.0;
@@ -86,12 +92,12 @@ double PolySpline::interpolation(double x, PolySpline::ValueType type) const
   }
 }
 
-double PolySpline::get(double x) const
+double PolySpline::get(double x)
 {
   return interpolation(x, Value);
 }
 
-double PolySpline::getVel(double x) const
+double PolySpline::getVel(double x)
 {
   return interpolation(x, Speed);
 }
@@ -142,7 +148,7 @@ PolySpline::Polynom PolySpline::polynomFit(double t1, double val1, double delta1
  * Return the spline interpolation value
  * with x bound between 0 and 1
  */
-double PolySpline::getMod(double x) const
+double PolySpline::getMod(double x)
 {
   if (x < 0.0)
   {

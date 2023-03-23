@@ -33,19 +33,19 @@ public:
    * Return the spline interpolation
    * for given x position
    */
-  Eigen::Vector3d get(double x) const;
+  Eigen::Vector3d get(double x);
 
   /**
    * Returns the spline speed interpolation
    * for given x position
    */
-  Eigen::Vector3d getVel(double x) const;
+  Eigen::Vector3d getVel(double x);
 
   /**
    * Return the spline interpolation value
    * with x bound between 0 and 1
    */
-  Eigen::Vector3d getMod(double x) const;
+  Eigen::Vector3d getMod(double x);
 
 private:
   rhoban_utils::PolySpline xSpline;
