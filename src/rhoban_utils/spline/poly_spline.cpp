@@ -7,13 +7,20 @@
 
 namespace rhoban_utils
 {
-void PolySpline::addPoint(double pos, double val, double delta)
+void PolySpline::addPoint(double pos, double val, double delta, bool angle_spline)
 {
-  struct Point point = { pos, val, delta };
+  // Discontinuity of angle
+  if (angle_spline && _points.size() > 0 && val * _points.back().raw_value < 0 && abs(val) > M_PI_2)
+  {
+    angle_offset += val < 0 ? 1 : -1;
+  }
+  struct Point point = { pos, val + 2 * M_PI * angle_offset, val, delta };
+
   if (_points.size() > 0 && pos <= _points.back().position)
   {
     throw std::runtime_error("Trying to add a point in a cublic spline before a previous one");
   }
+
   _points.push_back(point);
   computeSplines();
 }

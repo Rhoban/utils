@@ -9,7 +9,7 @@ namespace rhoban_utils
  * PolySpline
  *
  * Splines primitive based on third order polynoms
- * for smooth and differentiablie adjunction
+ * for smooth and differentiable adjunction
  */
 class PolySpline
 {
@@ -18,6 +18,7 @@ public:
   {
     double position;
     double value;
+    double raw_value;
     double delta;
   };
 
@@ -32,7 +33,7 @@ public:
    * Add a point with its x position, y value and
    * its derivative slope
    */
-  void addPoint(double pos, double val, double delta);
+  void addPoint(double pos, double val, double delta, bool angle_spline = false);
 
   void clear();
 
@@ -93,6 +94,11 @@ private:
    * Splines container
    */
   Splines _splines;
+
+  /**
+   * Used to ensure continuity of the spline while dealing with angles (cycling topology)
+   */
+  int angle_offset = 0;
 
   /**
    * Fast exponentation to compute
