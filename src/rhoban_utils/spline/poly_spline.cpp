@@ -10,11 +10,25 @@ namespace rhoban_utils
 void PolySpline::addPoint(double pos, double val, double delta, bool angle_spline)
 {
   // Discontinuity of angle
-  if (angle_spline && _points.size() > 0 && val * _points.back().raw_value < 0 && abs(val) > M_PI_2)
+  if (angle_spline && _points.size() > 0)
   {
-    angle_offset += val < 0 ? 1 : -1;
+    double previous_value = std::fmod(_points.back().value, 2 * M_PI);
+    if (previous_value > M_PI)
+    {
+      previous_value -= 2 * M_PI;
+    }
+    else if (previous_value < -M_PI)
+    {
+      previous_value += 2 * M_PI;
+    }
+
+    if (val * previous_value < 0 && abs(val) > M_PI_2)
+    {
+      angle_offset += val < 0 ? 1 : -1;
+    }
   }
-  struct Point point = { pos, val + 2 * M_PI * angle_offset, val, delta };
+
+  struct Point point = { pos, val + 2 * M_PI * angle_offset, delta };
 
   if (_points.size() > 0 && pos <= _points.back().position)
   {

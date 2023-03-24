@@ -18,7 +18,6 @@ public:
   {
     double position;
     double value;
-    double raw_value;
     double delta;
   };
 
