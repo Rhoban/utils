@@ -18,7 +18,6 @@ public:
   {
     double position;
     double value;
-    double raw_value;
     double delta;
   };
 
@@ -96,11 +95,6 @@ private:
    * Splines container
    */
   Splines _splines;
-
-  /**
-   * Used to ensure continuity of the spline while dealing with angles (cycling topology)
-   */
-  int angle_offset = 0;
 
   /**
    * Fast exponentation to compute

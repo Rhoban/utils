@@ -1,4 +1,5 @@
 #include "rhoban_utils/spline/poly_spline.h"
+#include "rhoban_utils/angle.h"
 #include <Eigen/Dense>
 #include <algorithm>
 #include <cmath>
@@ -10,11 +11,11 @@ namespace rhoban_utils
 void PolySpline::addPoint(double pos, double val, double delta, bool angle_spline)
 {
   // Discontinuity of angle
-  if (angle_spline && _points.size() > 0 && val * _points.back().raw_value < 0 && abs(val) > M_PI_2)
+  if (angle_spline && _points.size() > 0)
   {
-    angle_offset += val < 0 ? 1 : -1;
+    val = _points.back().value + normalizeRad(val - _points.back().value);
   }
-  struct Point point = { pos, val + 2 * M_PI * angle_offset, val, delta };
+  struct Point point = { pos, val, delta };
 
   if (_points.size() > 0 && pos <= _points.back().position)
   {
