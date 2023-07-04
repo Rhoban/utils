@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace rhoban_strategy
+namespace rhoban_utils
 {
 template <typename T>
 class LexicographicalScore
@@ -54,4 +54,4 @@ public:
 
   std::vector<T> score;
 };
-}  // namespace rhoban_strategy
+}  // namespace rhoban_utils
