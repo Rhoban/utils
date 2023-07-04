@@ -16,7 +16,7 @@ void ElapseTick::tick()
   double elapsed = diffSec(lastTimestamp, nowT);
   lastTimestamp = nowT;
 
-  tickElapsed(elapsed);
+  tickElapsed(elapsed*2.);
 }
 
 void ElapseTick::tickElapsed(double elapsed)
