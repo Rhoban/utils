@@ -408,7 +408,7 @@ protected:
 class HistoryDouble : public History<double>
 {
 public:
-  HistoryDouble(double window = 2.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
+  HistoryDouble(double window = -1.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
 
   double doInterpolate(const double& valLow, double wLow, const double& valUp, double wUp) const;
   double fallback() const;
@@ -423,7 +423,7 @@ public:
 class HistoryBool : public History<bool>
 {
 public:
-  HistoryBool(double window = 2.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
+  HistoryBool(double window = -1.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
 
   bool doInterpolate(const bool& valLow, double wLow, const bool& valUp, double wUp) const;
   bool fallback() const;
@@ -438,7 +438,7 @@ public:
 class HistoryAngle : public HistoryDouble
 {
 public:
-  HistoryAngle(double window = 2.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
+  HistoryAngle(double window = -1.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
 
   double doInterpolate(const double& valLow, double wLow, const double& valHigh, double wHigh) const;
   HistoryBase* clone();
@@ -447,7 +447,7 @@ public:
 class HistoryPose : public History<Eigen::Affine3d>
 {
 public:
-  HistoryPose(double window = 2.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
+  HistoryPose(double window = -1.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
 
   Eigen::Affine3d doInterpolate(const Eigen::Affine3d& valLow, double wLow, const Eigen::Affine3d& valHigh,
                                 double wHigh) const;
@@ -468,7 +468,7 @@ public:
 class HistoryVector3d : public History<Eigen::Vector3d>
 {
 public:
-  HistoryVector3d(double window = 2.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
+  HistoryVector3d(double window = -1.0, InterpolatePolicy policy = InterpolatePolicy::Linear);
 
   Eigen::Vector3d doInterpolate(const Eigen::Vector3d& valLow, double wLow, const Eigen::Vector3d& valHigh,
                                 double wHigh) const;
@@ -484,7 +484,7 @@ public:
 class HistoryCollection
 {
 public:
-  HistoryCollection(double window = 2.0);
+  HistoryCollection(double window = -1.0);
   // Copy constructor (might not be thread safe if other object is accessed in same time)
   HistoryCollection(const HistoryCollection& other);
 
