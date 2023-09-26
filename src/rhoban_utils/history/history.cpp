@@ -286,7 +286,7 @@ HistoryCollection::~HistoryCollection()
   }
 }
 
-void HistoryCollection::loadReplays(const std::string& filePath, bool oldFormat)
+void HistoryCollection::loadReplays(const std::string& filePath, bool oldFormat, bool verbose)
 {
   clear();
 
@@ -352,7 +352,10 @@ void HistoryCollection::loadReplays(const std::string& filePath, bool oldFormat)
     }
 
     _histories[name]->loadReplay(file, 0.0);
-    std::cout << "Loading " << name << " with " << _histories[name]->size() << " points" << std::endl;
+    if (verbose)
+    {
+      std::cout << "Loading " << name << " with " << _histories[name]->size() << " points" << std::endl;
+    }
   }
 
   // Close read file
@@ -505,6 +508,8 @@ void HistoryCollection::exportToCSV(double dt, std::string filename, char separa
 
   double tmp_t = HistoryCollection::smallestTimestamp();
   double max_t = HistoryCollection::biggestTimestamp();
+  std::cout << "Exporting from " << tmp_t << " to " << max_t << std::endl;
+  int i = 0;
   do
   {
     csv->push("time", tmp_t);
@@ -512,6 +517,14 @@ void HistoryCollection::exportToCSV(double dt, std::string filename, char separa
     for (auto& val : values)
       csv->push(val.first, val.second);
     csv->newLine();
+
+    i++;
+    if (i > 1000)
+    {
+      i = 0;
+      std::cout << "com_x at " << tmp_t << " is " << values["read:com_x:value"] << std::endl;
+    }
+
     tmp_t += dt;
   } while (tmp_t < max_t);
 
