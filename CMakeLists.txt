@@ -3,6 +3,7 @@ project(rhoban_utils)
 
 find_package (Eigen3 3 REQUIRED NO_MODULE)
 find_package(Threads REQUIRED)
+find_package(jsoncpp REQUIRED)
 
 option(RHOBAN_UTILS_BUILD_EXAMPLES "Building examples" OFF)
 
