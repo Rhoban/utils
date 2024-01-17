@@ -397,6 +397,23 @@ double HistoryCollection::biggestTimestamp() const
   return biggestTimestamp;
 }
 
+std::vector<double> HistoryCollection::getTimestamps()
+{
+  std::vector<double> timestamps;
+  for (auto& it : _histories)
+  {
+    for (double ts: it.second->getTimestamps())
+    {
+      timestamps.push_back(ts);
+    }
+    if (timestamps.size() == 0)
+    {
+      continue;
+    }
+    return timestamps;
+  }
+}
+
 void HistoryCollection::startNamedLog(const std::string& filePath)
 {
   mutex.lock();

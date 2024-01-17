@@ -54,6 +54,7 @@ public:
   virtual void clear() = 0;
   virtual std::map<std::string, double> requestValue(double time_stamp) const = 0;
   virtual HistoryBase* clone() = 0;
+  virtual std::vector<double> getTimestamps() = 0;
 };
 
 /**
@@ -351,6 +352,19 @@ public:
   }
 
   /**
+   * Getting all timestamps
+   */
+  std::vector<double> getTimestamps()
+  {
+    std::vector<double> timestamps;
+    for (auto& it : _values)
+    {
+      timestamps.push_back(it.first);
+    }
+    return timestamps;
+  }
+
+  /**
    * Clearing history values
    */
   void clear()
@@ -560,6 +574,8 @@ public:
    */
   double smallestTimestamp() const;
   double biggestTimestamp() const;
+
+  std::vector<double> getTimestamps();
 
   void clear();
 
