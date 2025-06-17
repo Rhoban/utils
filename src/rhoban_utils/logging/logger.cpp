@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <time.h>
 #include <cstdarg>
 #include <cmath>
 #ifndef WIN32
