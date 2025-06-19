@@ -27,6 +27,5 @@ void UDPUnicast::send(std::string ip, int port, const unsigned char* data, size_
   inet_pton(AF_INET, ip.c_str(), &addr.sin_addr);
 
   sendto(sock, data, len, 0, (struct sockaddr*)&addr, sizeof(addr));
-  close(sock);
 }
 }  // namespace rhoban_utils
