@@ -5,7 +5,6 @@ LowPassCommandsFilter::LowPassCommandsFilter(double control_freq,
     : control_freq(control_freq), cutoff_frequency(cutoff_frequency),
       last_action(Eigen::Vector3d::Zero()),
       current_action(Eigen::Vector3d::Zero()) {
-  alpha = compute_alpha();
 }
 
 double LowPassCommandsFilter::compute_alpha(){
@@ -18,6 +17,7 @@ void LowPassCommandsFilter::push(const Eigen::Vector3d &action) {
 }
 
 Eigen::Vector3d LowPassCommandsFilter::get_filtered_command() {
+  alpha = compute_alpha();
   last_action = alpha * last_action + (1.0 - alpha) * current_action;
   return last_action;
 }
