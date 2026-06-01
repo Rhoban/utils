@@ -31,6 +31,7 @@ public:
   void log(const char* fmt, ...);
   void success(const char* fmt, ...);
   void debug(const char* fmt, ...);
+  void printstacktrace();
 
   bool colors;
 

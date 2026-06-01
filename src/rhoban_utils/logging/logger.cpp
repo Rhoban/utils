@@ -8,6 +8,7 @@
 #endif
 
 #include "rhoban_utils/logging/logger.h"
+#include <execinfo.h>
 
 #define T_COLOR_RED "\x1b[0;31m"
 #define T_COLOR_GREEN "\x1b[0;32m"
@@ -138,4 +139,14 @@ void Logger::debug(const char* fmt, ...)
 {
   LOG(LoggerDebug);
 }
-}  // namespace rhoban_utils
+
+void Logger::printstacktrace()
+{
+    void* callstack[10];
+    int frames = backtrace(callstack, 10);
+    char** symbols = backtrace_symbols(callstack, frames);
+    for (int i = 0; i < frames; i++) error("%s\n", symbols[i]);
+    free(symbols);
+}  
+
+} // namespace rhoban_utils
